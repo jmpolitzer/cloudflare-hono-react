@@ -1,8 +1,10 @@
+install bun - https://bun.sh/docs/installation
+
 ```
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ```
-npm run deploy
+bun run deploy
 ```

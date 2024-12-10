@@ -6,7 +6,9 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "drizzle:generate-prod": "cross-env NODE_ENV=production drizzle-kit generate",
     "drizzle:migrate-prod": "cross-env NODE_ENV=production drizzle-kit migrate",
-    "drizzle:studio-prod": "cross-env NODE_ENV=production drizzle-kit studio"
+    "drizzle:studio-prod": "cross-env NODE_ENV=production drizzle-kit studio",
+    "lint": "biome check ./src",
+    "format": "biome check --write ./src"
   },
   "dependencies": {
     "@libsql/client": "^0.14.0",
@@ -15,8 +17,10 @@
     "hono": "^4.6.13"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@cloudflare/workers-types": "^4.20241205.0",
     "drizzle-kit": "^0.30.0",
+    "lefthook": "^1.9.0",
     "wrangler": "^3.88.0"
   }
 }
