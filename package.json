@@ -3,13 +3,20 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "drizzle:generate-prod": "cross-env NODE_ENV=production drizzle-kit generate",
+    "drizzle:migrate-prod": "cross-env NODE_ENV=production drizzle-kit migrate",
+    "drizzle:studio-prod": "cross-env NODE_ENV=production drizzle-kit studio"
   },
   "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.0",
     "hono": "^4.6.13"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241205.0",
+    "drizzle-kit": "^0.30.0",
     "wrangler": "^3.88.0"
   }
 }
