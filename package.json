@@ -1,26 +1,33 @@
 {
-  "name": "cloudflare-hono-react",
-  "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
-    "drizzle:generate-prod": "cross-env NODE_ENV=production drizzle-kit generate",
-    "drizzle:migrate-prod": "cross-env NODE_ENV=production drizzle-kit migrate",
-    "drizzle:studio-prod": "cross-env NODE_ENV=production drizzle-kit studio",
-    "lint": "biome check ./src",
-    "format": "biome check --write ./src"
-  },
-  "dependencies": {
-    "@libsql/client": "^0.14.0",
-    "dotenv": "^16.4.7",
-    "drizzle-orm": "^0.38.0",
-    "hono": "^4.6.13"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@cloudflare/workers-types": "^4.20241205.0",
-    "drizzle-kit": "^0.30.0",
-    "lefthook": "^1.9.0",
-    "wrangler": "^3.88.0"
-  }
+	"name": "cloudflare-hono-react",
+	"scripts": {
+		"dev": "wrangler pages dev --compatibility-date=2024-12-05 -- bun vite",
+		"build": "vite build",
+		"deploy": "npm run build && wrangler pages deploy pages",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
+		"drizzle:generate-prod": "cross-env NODE_ENV=production drizzle-kit generate",
+		"drizzle:migrate-prod": "cross-env NODE_ENV=production drizzle-kit migrate",
+		"drizzle:studio-prod": "cross-env NODE_ENV=production drizzle-kit studio",
+		"lint": "biome check ./src",
+		"format": "biome check --write ./src"
+	},
+	"dependencies": {
+		"@libsql/client": "^0.14.0",
+		"dotenv": "^16.4.7",
+		"drizzle-orm": "^0.38.0",
+		"hono": "^4.6.13",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@cloudflare/workers-types": "^4.20241205.0",
+		"@types/react": "^19.0.1",
+		"@types/react-dom": "^19.0.2",
+		"@vitejs/plugin-react": "^4.3.4",
+		"drizzle-kit": "^0.30.0",
+		"lefthook": "^1.9.0",
+		"vite": "^6.0.3",
+		"wrangler": "^3.88.0"
+	}
 }
