@@ -4,21 +4,32 @@ import { useEffect, useState } from "react";
 import type { NotesType } from "../functions/api/[[route]]";
 
 const App = () => {
-	// TODO: Replace the URL with the URL of your deployed API
-	const client = hc<NotesType>("http://localhost:8788/");
-	const $get = client.api.notes.$get;
+	const client = hc<NotesType>("/");
+	const getNotes = client.api.notes.$get;
+	const getNote = client.api.notes[":id"].$get;
 
-	const [data, setData] = useState<InferResponseType<typeof $get>>();
+	const [data, setData] = useState<InferResponseType<typeof getNotes>>();
+	const [note, setNote] = useState<InferResponseType<typeof getNote>>();
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: This is necessary to avoid an infinite loop
 	useEffect(() => {
-		const fetchData = async () => {
-			const res = await $get();
+		const fetchNotes = async () => {
+			const res = await getNotes();
 			const responseData = await res.json();
 
 			setData(responseData);
 		};
-		fetchData();
-	}, [$get]);
+
+		const fetchNote = async () => {
+			const res = await getNote({ param: { id: "3" } });
+			const responseData = await res.json();
+
+			setNote(responseData);
+		};
+
+		fetchNotes();
+		fetchNote();
+	}, []);
 
 	return (
 		<div>
@@ -31,6 +42,15 @@ const App = () => {
 					</li>
 				))}
 			</ul>
+			{note ? (
+				<div>
+					<h1>My Single Note</h1>
+					<div>
+						<p>{note.note[0].title}</p>
+						<p>{note.note[0].description}</p>
+					</div>
+				</div>
+			) : null}
 		</div>
 	);
 };

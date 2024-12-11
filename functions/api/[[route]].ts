@@ -1,14 +1,15 @@
-import { drizzle } from "drizzle-orm/d1";
+import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
-import { notesTable } from "../../src/db/schema";
-import server from "../../src/server";
+import { notes } from "../../src/resources/notes";
 
-const notesRoute = server.get("/notes", async (c) => {
-	const db = drizzle(c.env.DB);
-	const notes = await db.select().from(notesTable).all();
+// Set base path for all routes
+const app = new Hono().basePath("/api");
 
-	return c.json({ notes });
-});
+// Add route resource groups
+const notesRoutes = app.route("/notes", notes);
 
-export type NotesType = typeof notesRoute;
-export const onRequest = handle(notesRoute);
+// Export types for client
+export type NotesType = typeof notesRoutes;
+
+// Export onRequest handler for Cloudflare Functions - https://developers.cloudflare.com/pages/functions/
+export const onRequest = handle(app);
