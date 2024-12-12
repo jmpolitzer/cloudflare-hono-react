@@ -1,15 +1,16 @@
+import { notes } from "@resources/notes";
+import { topics } from "@resources/topics";
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
-import { notes } from "../../src/resources/notes";
 
-// Set base path for all routes
-const app = new Hono().basePath("/api");
+// Set base path and add resource route groups
+const app = new Hono()
+	.basePath("/api")
+	.route("/notes", notes)
+	.route("/topics", topics);
 
-// Add route resource groups
-const notesRoutes = app.route("/notes", notes);
-
-// Export types for client
-export type NotesType = typeof notesRoutes;
+// Export app type for client (hc)
+export type AppType = typeof app;
 
 // Export onRequest handler for Cloudflare Functions - https://developers.cloudflare.com/pages/functions/
 export const onRequest = handle(app);

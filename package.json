@@ -3,11 +3,11 @@
 	"scripts": {
 		"dev": "wrangler pages dev --compatibility-date=2024-12-05 -- bun vite",
 		"build": "vite build",
-		"deploy": "npm run build && wrangler pages deploy pages",
+		"deploy": "npm run build && wrangler pages deploy dist",
 		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
-		"drizzle:generate-prod": "cross-env NODE_ENV=production drizzle-kit generate",
-		"drizzle:migrate-prod": "cross-env NODE_ENV=production drizzle-kit migrate",
-		"drizzle:studio-prod": "cross-env NODE_ENV=production drizzle-kit studio",
+		"driz-gen-prod": "cross-env NODE_ENV=production drizzle-kit generate",
+		"driz-mig-prod": "cross-env NODE_ENV=production drizzle-kit migrate",
+		"driz-stu-prod": "cross-env NODE_ENV=production drizzle-kit studio",
 		"lint": "biome check ./src",
 		"format": "biome check --write ./src"
 	},
@@ -25,6 +25,7 @@
 		"@types/react": "^19.0.1",
 		"@types/react-dom": "^19.0.2",
 		"@vitejs/plugin-react": "^4.3.4",
+		"cross-env": "^7.0.3",
 		"drizzle-kit": "^0.30.0",
 		"lefthook": "^1.9.0",
 		"vite": "^6.0.3",

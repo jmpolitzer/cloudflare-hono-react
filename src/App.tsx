@@ -1,14 +1,14 @@
+import type { AppType } from "@app-types";
 import type { InferResponseType } from "hono/client";
 import { hc } from "hono/client";
 import { useEffect, useState } from "react";
-import type { NotesType } from "../functions/api/[[route]]";
 
 const App = () => {
-	const client = hc<NotesType>("/");
+	const client = hc<AppType>("/");
 	const getNotes = client.api.notes.$get;
 	const getNote = client.api.notes[":id"].$get;
 
-	const [data, setData] = useState<InferResponseType<typeof getNotes>>();
+	const [notes, setNotes] = useState<InferResponseType<typeof getNotes>>();
 	const [note, setNote] = useState<InferResponseType<typeof getNote>>();
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: This is necessary to avoid an infinite loop
@@ -17,7 +17,7 @@ const App = () => {
 			const res = await getNotes();
 			const responseData = await res.json();
 
-			setData(responseData);
+			setNotes(responseData);
 		};
 
 		const fetchNote = async () => {
@@ -35,7 +35,7 @@ const App = () => {
 		<div>
 			<h1>My Notes</h1>
 			<ul>
-				{data?.notes.map((note) => (
+				{notes?.notes.map((note) => (
 					<li key={note.id}>
 						<p>{note.title}</p>
 						<p>{note.description}</p>
