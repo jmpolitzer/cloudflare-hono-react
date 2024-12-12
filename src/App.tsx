@@ -21,7 +21,7 @@ const App = () => {
 		};
 
 		const fetchNote = async () => {
-			const res = await getNote({ param: { id: "3" } });
+			const res = await getNote({ param: { id: "1" } });
 			const responseData = await res.json();
 
 			setNote(responseData);
@@ -42,7 +42,7 @@ const App = () => {
 					</li>
 				))}
 			</ul>
-			{note ? (
+			{note && note.note.length > 0 ? (
 				<div>
 					<h1>My Single Note</h1>
 					<div>

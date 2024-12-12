@@ -1,9 +1,11 @@
 {
 	"name": "cloudflare-hono-react",
 	"scripts": {
-		"dev": "wrangler pages dev --compatibility-date=2024-12-05 -- bun vite",
+		"dev:ui": "vite",
+		"dev:server": "wrangler pages dev --live-reload",
+		"dev": "concurrently \"bun run dev:ui\" \"bun run dev:server\"",
 		"build": "vite build",
-		"deploy": "npm run build && wrangler pages deploy dist",
+		"deploy": "bun run build && wrangler pages deploy dist",
 		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
 		"driz-gen-prod": "cross-env NODE_ENV=production drizzle-kit generate",
 		"driz-mig-prod": "cross-env NODE_ENV=production drizzle-kit migrate",
@@ -25,6 +27,7 @@
 		"@types/react": "^19.0.1",
 		"@types/react-dom": "^19.0.2",
 		"@vitejs/plugin-react": "^4.3.4",
+		"concurrently": "^9.1.0",
 		"cross-env": "^7.0.3",
 		"drizzle-kit": "^0.30.0",
 		"lefthook": "^1.9.0",
