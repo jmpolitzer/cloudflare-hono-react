@@ -1,5 +1,24 @@
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import { routeTree } from "./routeTree.gen";
 
-// biome-ignore lint/style/noNonNullAssertion: This is necessary to avoid a type error
-ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
+const router = createRouter({ routeTree });
+
+declare module "@tanstack/react-router" {
+	interface Register {
+		router: typeof router;
+	}
+}
+
+const rootElement = document.getElementById("root");
+
+if (!rootElement?.innerHTML) {
+	// biome-ignore lint/style/noNonNullAssertion: Needed with strict:true
+	const root = ReactDOM.createRoot(rootElement!);
+	root.render(
+		<StrictMode>
+			<RouterProvider router={router} />
+		</StrictMode>,
+	);
+}

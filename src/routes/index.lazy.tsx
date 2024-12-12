@@ -1,9 +1,15 @@
-import type { AppType } from "@app-types";
-import type { InferResponseType } from "hono/client";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import { hc } from "hono/client";
 import { useEffect, useState } from "react";
 
-const App = () => {
+import type { AppType } from "@app-types";
+import type { InferResponseType } from "hono/client";
+
+export const Route = createLazyFileRoute("/")({
+	component: Index,
+});
+
+function Index() {
 	const client = hc<AppType>("/");
 	const getNotes = client.api.notes.$get;
 	const getNote = client.api.notes[":id"].$get;
@@ -32,7 +38,7 @@ const App = () => {
 	}, []);
 
 	return (
-		<div>
+		<div className="p-2">
 			<h1>My Notes</h1>
 			<ul>
 				{notes?.notes.map((note) => (
@@ -53,6 +59,4 @@ const App = () => {
 			) : null}
 		</div>
 	);
-};
-
-export default App;
+}
