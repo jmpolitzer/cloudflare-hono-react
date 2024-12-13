@@ -12,9 +12,8 @@
 		"jsxImportSource": "react",
 		"baseUrl": ".",
 		"paths": {
-			"@app-types": ["functions/api/[[route]].ts"],
-			"@db/*": ["src/db/*"],
-			"@resources/*": ["src/resources/*"]
+			"@app-type": ["functions/api/[[route]].ts"],
+			"@/*": ["./src/*"]
 		}
 	}
 }

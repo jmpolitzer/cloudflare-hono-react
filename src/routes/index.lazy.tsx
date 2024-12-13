@@ -2,7 +2,8 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 import { hc } from "hono/client";
 import { useEffect, useState } from "react";
 
-import type { AppType } from "@app-types";
+import { Button } from "@/components/ui/button";
+import type { AppType } from "@app-type";
 import type { InferResponseType } from "hono/client";
 
 export const Route = createLazyFileRoute("/")({
@@ -42,7 +43,7 @@ function Index() {
 			<h1>My Notes</h1>
 			<ul>
 				{notes?.notes.map((note) => (
-					<li key={note.id}>
+					<li key={note.id} className="font-bold text-xl underline">
 						<p>{note.title}</p>
 						<p>{note.description}</p>
 					</li>
@@ -57,6 +58,7 @@ function Index() {
 					</div>
 				</div>
 			) : null}
+			<Button>Click me</Button>
 		</div>
 	);
 }
