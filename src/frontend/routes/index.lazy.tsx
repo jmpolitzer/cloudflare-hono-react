@@ -1,9 +1,14 @@
-import { Button } from "@/components/ui/button";
-import { useCreateNote, useNote, useNotes, zodNoteSchema } from "@/hooks/notes";
+import { Button } from "@/frontend/components/ui/button";
+import {
+	useCreateNote,
+	useNote,
+	useNotes,
+	zodNoteSchema,
+} from "@/frontend/hooks/notes";
 import { useForm } from "@tanstack/react-form";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
-import type { NoteSchema } from "@/hooks/notes";
+import type { NoteSchema } from "@/frontend/hooks/notes";
 import type { FieldApi } from "@tanstack/react-form";
 
 export const Route = createLazyFileRoute("/")({

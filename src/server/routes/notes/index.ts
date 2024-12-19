@@ -1,4 +1,4 @@
-import * as schema from "@/db/schema";
+import * as schema from "@/server/db/schema";
 import { zValidator } from "@hono/zod-validator";
 import { drizzle } from "drizzle-orm/d1";
 import { createInsertSchema } from "drizzle-zod";

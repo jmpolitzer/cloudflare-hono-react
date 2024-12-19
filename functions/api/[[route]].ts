@@ -1,5 +1,5 @@
-import { notes } from "@/resources/notes";
-import { topics } from "@/resources/topics";
+import { notes } from "@/server/routes/notes";
+import { topics } from "@/server/routes/topics";
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
 
