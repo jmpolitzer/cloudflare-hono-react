@@ -34,5 +34,3 @@ export const notes = app
 
 		return c.json({ note });
 	});
-
-export type AppType = typeof notes;

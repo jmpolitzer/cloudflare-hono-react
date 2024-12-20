@@ -11,7 +11,7 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 import type { NoteSchema } from "@/frontend/hooks/notes";
 import type { FieldApi } from "@tanstack/react-form";
 
-export const Route = createLazyFileRoute("/")({
+export const Route = createLazyFileRoute("/_authenticated/")({
 	component: Index,
 });
 

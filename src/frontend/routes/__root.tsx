@@ -1,7 +1,18 @@
-import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
+import { Button } from "@/frontend/components/ui/button";
+import {
+	Link,
+	Outlet,
+	createRootRouteWithContext,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
-export const Route = createRootRoute({
+import type { QueryClient } from "@tanstack/react-query";
+
+interface RouterContext {
+	queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
 	component: () => (
 		<>
 			<div className="flex gap-2 p-2">
@@ -11,6 +22,9 @@ export const Route = createRootRoute({
 				<Link to="/about" className="[&.active]:font-bold">
 					About
 				</Link>
+				<Button asChild>
+					<a href="/api/auth/logout">Logout</a>
+				</Button>
 			</div>
 			<hr />
 			<Outlet />

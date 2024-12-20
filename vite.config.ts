@@ -8,7 +8,13 @@ export default defineConfig({
 		minify: true,
 		outDir: "./dist",
 	},
-	plugins: [TanStackRouterVite(), viteReact()],
+	plugins: [
+		TanStackRouterVite({
+			routesDirectory: "./src/frontend/routes",
+			generatedRouteTree: "./src/frontend/routeTree.gen.ts",
+		}),
+		viteReact(),
+	],
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),

@@ -22,5 +22,3 @@ export const topics = app
 
 		return c.json({ topic });
 	});
-
-export type AppType = typeof topics;
