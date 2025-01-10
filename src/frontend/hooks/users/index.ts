@@ -22,3 +22,5 @@ export const getCurrentUserQueryOptions = queryOptions({
 export const useCurrentUser = () => {
 	return useQuery(getCurrentUserQueryOptions);
 };
+
+export type CurrentUser = ReturnType<typeof useCurrentUser>["data"];
