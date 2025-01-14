@@ -14,11 +14,13 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
+import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes/route'
+import { Route as AuthenticatedNotesCreateRouteImport } from './routes/_authenticated/notes/create/route'
 
 // Create Virtual Routes
 
 const AboutLazyImport = createFileRoute('/about')()
-const AuthenticatedIndexLazyImport = createFileRoute('/_authenticated/')()
 const AuthenticatedAccountLazyImport = createFileRoute(
   '/_authenticated/account',
 )()
@@ -36,7 +38,7 @@ const AuthenticatedRoute = AuthenticatedImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AuthenticatedIndexLazyRoute = AuthenticatedIndexLazyImport.update({
+const AuthenticatedIndexRoute = AuthenticatedIndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
@@ -51,6 +53,25 @@ const AuthenticatedAccountLazyRoute = AuthenticatedAccountLazyImport.update({
 } as any).lazy(() =>
   import('./routes/_authenticated/account.lazy').then((d) => d.Route),
 )
+
+const AuthenticatedNotesRouteRoute = AuthenticatedNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any).lazy(() =>
+  import('./routes/_authenticated/notes/route.lazy').then((d) => d.Route),
+)
+
+const AuthenticatedNotesCreateRouteRoute =
+  AuthenticatedNotesCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthenticatedNotesRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/notes/create/route.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
 // Populate the FileRoutesByPath interface
 
@@ -70,6 +91,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutLazyImport
       parentRoute: typeof rootRoute
     }
+    '/_authenticated/notes': {
+      id: '/_authenticated/notes'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof AuthenticatedNotesRouteImport
+      parentRoute: typeof AuthenticatedImport
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
@@ -81,22 +109,45 @@ declare module '@tanstack/react-router' {
       id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexLazyImport
+      preLoaderRoute: typeof AuthenticatedIndexImport
       parentRoute: typeof AuthenticatedImport
+    }
+    '/_authenticated/notes/create': {
+      id: '/_authenticated/notes/create'
+      path: '/create'
+      fullPath: '/notes/create'
+      preLoaderRoute: typeof AuthenticatedNotesCreateRouteImport
+      parentRoute: typeof AuthenticatedNotesRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface AuthenticatedNotesRouteRouteChildren {
+  AuthenticatedNotesCreateRouteRoute: typeof AuthenticatedNotesCreateRouteRoute
+}
+
+const AuthenticatedNotesRouteRouteChildren: AuthenticatedNotesRouteRouteChildren =
+  {
+    AuthenticatedNotesCreateRouteRoute: AuthenticatedNotesCreateRouteRoute,
+  }
+
+const AuthenticatedNotesRouteRouteWithChildren =
+  AuthenticatedNotesRouteRoute._addFileChildren(
+    AuthenticatedNotesRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
+  AuthenticatedNotesRouteRoute: typeof AuthenticatedNotesRouteRouteWithChildren
   AuthenticatedAccountLazyRoute: typeof AuthenticatedAccountLazyRoute
-  AuthenticatedIndexLazyRoute: typeof AuthenticatedIndexLazyRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedNotesRouteRoute: AuthenticatedNotesRouteRouteWithChildren,
   AuthenticatedAccountLazyRoute: AuthenticatedAccountLazyRoute,
-  AuthenticatedIndexLazyRoute: AuthenticatedIndexLazyRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -106,35 +157,43 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutLazyRoute
+  '/notes': typeof AuthenticatedNotesRouteRouteWithChildren
   '/account': typeof AuthenticatedAccountLazyRoute
-  '/': typeof AuthenticatedIndexLazyRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/notes/create': typeof AuthenticatedNotesCreateRouteRoute
 }
 
 export interface FileRoutesByTo {
   '/about': typeof AboutLazyRoute
+  '/notes': typeof AuthenticatedNotesRouteRouteWithChildren
   '/account': typeof AuthenticatedAccountLazyRoute
-  '/': typeof AuthenticatedIndexLazyRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/notes/create': typeof AuthenticatedNotesCreateRouteRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutLazyRoute
+  '/_authenticated/notes': typeof AuthenticatedNotesRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountLazyRoute
-  '/_authenticated/': typeof AuthenticatedIndexLazyRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/notes/create': typeof AuthenticatedNotesCreateRouteRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/about' | '/account' | '/'
+  fullPaths: '' | '/about' | '/notes' | '/account' | '/' | '/notes/create'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/account' | '/'
+  to: '/about' | '/notes' | '/account' | '/' | '/notes/create'
   id:
     | '__root__'
     | '/_authenticated'
     | '/about'
+    | '/_authenticated/notes'
     | '/_authenticated/account'
     | '/_authenticated/'
+    | '/_authenticated/notes/create'
   fileRoutesById: FileRoutesById
 }
 
@@ -165,6 +224,7 @@ export const routeTree = rootRoute
     "/_authenticated": {
       "filePath": "_authenticated.tsx",
       "children": [
+        "/_authenticated/notes",
         "/_authenticated/account",
         "/_authenticated/"
       ]
@@ -172,13 +232,24 @@ export const routeTree = rootRoute
     "/about": {
       "filePath": "about.lazy.tsx"
     },
+    "/_authenticated/notes": {
+      "filePath": "_authenticated/notes/route.tsx",
+      "parent": "/_authenticated",
+      "children": [
+        "/_authenticated/notes/create"
+      ]
+    },
     "/_authenticated/account": {
       "filePath": "_authenticated/account.lazy.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/": {
-      "filePath": "_authenticated/index.lazy.tsx",
+      "filePath": "_authenticated/index.tsx",
       "parent": "/_authenticated"
+    },
+    "/_authenticated/notes/create": {
+      "filePath": "_authenticated/notes/create/route.tsx",
+      "parent": "/_authenticated/notes"
     }
   }
 }
