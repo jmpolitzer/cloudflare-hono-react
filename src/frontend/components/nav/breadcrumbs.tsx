@@ -22,7 +22,7 @@ export default function Breadcrumbs() {
 		<Breadcrumb>
 			<BreadcrumbList>
 				{matchesWithCrumbs.map((match, i) => (
-					<Fragment key={`${match}`}>
+					<Fragment key={`${match.id}`}>
 						<BreadcrumbItem>
 							{i + 1 < matchesWithCrumbs.length ? (
 								<BreadcrumbLink asChild className="hidden md:block">
