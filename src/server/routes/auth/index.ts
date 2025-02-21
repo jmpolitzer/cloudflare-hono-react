@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getKindeClient, getUser, sessionManager } from "./utils";
+import { getKindeClient, getUser, sessionManager } from "../../utils/kinde";
 
 // Create Hono app resource group with Cloudflare bindings
 const app = new Hono<{ Bindings: CloudflareBindings }>();
@@ -15,7 +15,8 @@ export const auth = app
 		return c.redirect(loginUrl.toString());
 	})
 	.get("/register", async (c) => {
-		const registerUrl = await c.var.kindeClient.register(sessionManager(c));
+		// This is the same as register method, except it creates an organization in the background.
+		const registerUrl = await c.var.kindeClient.createOrg(sessionManager(c));
 		return c.redirect(registerUrl.toString());
 	})
 	.get("/callback", async (c) => {

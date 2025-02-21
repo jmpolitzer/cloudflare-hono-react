@@ -1,5 +1,16 @@
+/**
+ * TODO:
+ * 1. Sign up to a specific organization.
+ * 		- create_org
+ * 2. Invite users to organization.
+ * 3. Remove users from organization.
+ * **/
+
 import {
+	Configuration,
 	GrantType,
+	OrganizationsApi,
+	UsersApi,
 	createKindeServerClient,
 } from "@kinde-oss/kinde-typescript-sdk";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
@@ -10,7 +21,10 @@ import type { CookieOptions } from "hono/utils/cookie";
 
 interface Variables {
 	kindeClient: ReturnType<typeof initKindeClient>;
-	user: UserType;
+	orgsApi: OrganizationsApi;
+	usersApi: UsersApi;
+	// Snake case is used to match the API response.
+	user: UserType & { current_org: string | null };
 }
 
 interface KindeBindings {
@@ -19,6 +33,10 @@ interface KindeBindings {
 	KINDE_CLIENT_SECRET: string;
 	KINDE_REDIRECT_URL: string;
 	KINDE_LOGOUT_REDIRECT_URL: string;
+	KINDE_M2M_ID: string;
+	KINDE_M2M_SECRET: string;
+	KINDE_API_AUDIENCE: string;
+	KINDE_API_SCOPE: string;
 }
 
 const initKindeClient = (bindings: KindeBindings) =>
@@ -34,12 +52,41 @@ const initKindeClient = (bindings: KindeBindings) =>
 		logoutRedirectURL: bindings.KINDE_LOGOUT_REDIRECT_URL!,
 	});
 
+const initKindeAPI = (bindings: KindeBindings) =>
+	createKindeServerClient(GrantType.CLIENT_CREDENTIALS, {
+		authDomain: bindings.KINDE_AUTH_DOMAIN,
+		clientId: bindings.KINDE_M2M_ID,
+		clientSecret: bindings.KINDE_M2M_SECRET,
+		audience: bindings.KINDE_API_AUDIENCE,
+		scope: bindings.KINDE_API_SCOPE,
+	});
+
 export const getKindeClient: MiddlewareHandler<{
 	Bindings: KindeBindings;
 	Variables: Variables;
 }> = async (c, next) => {
 	const kindeClient = initKindeClient(c.env);
+
 	c.set("kindeClient", kindeClient);
+	await next();
+};
+
+export const getKindeApi: MiddlewareHandler<{
+	Bindings: KindeBindings;
+	Variables: Variables;
+}> = async (c, next) => {
+	const kindeApi = initKindeAPI(c.env);
+	const token = await kindeApi.getToken(sessionManager(c));
+	const config = new Configuration({
+		basePath: c.env.KINDE_AUTH_DOMAIN,
+		accessToken: token,
+		headers: { Accept: "application/json" },
+	});
+	const usersApi = new UsersApi(config);
+	const orgsApi = new OrganizationsApi(config);
+
+	c.set("orgsApi", orgsApi);
+	c.set("usersApi", usersApi);
 	await next();
 };
 
@@ -57,7 +104,9 @@ export const getUser: MiddlewareHandler<{
 		// While checking if a user is authenticated, we can also check if the user is already stored in the context.
 		if (!c.var.user) {
 			const profile = await c.var.kindeClient.getUserProfile(manager);
-			c.set("user", profile);
+			const currentOrg = await c.var.kindeClient.getOrganization(manager);
+
+			c.set("user", { ...profile, current_org: currentOrg.orgCode });
 		}
 
 		await next();
