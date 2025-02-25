@@ -11,7 +11,12 @@ export const auth = app
 		return c.redirect(logoutUrl.toString());
 	})
 	.get("/login", async (c) => {
-		const loginUrl = await c.var.kindeClient.login(sessionManager(c));
+		const orgCode = c.req.query("org_code");
+		const loginOpts = orgCode ? { org_code: orgCode } : undefined;
+		const loginUrl = await c.var.kindeClient.login(
+			sessionManager(c),
+			loginOpts,
+		);
 		return c.redirect(loginUrl.toString());
 	})
 	.get("/register", async (c) => {

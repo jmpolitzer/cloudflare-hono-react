@@ -6,7 +6,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	// DropdownMenuShortcut,
 	DropdownMenuTrigger,
 } from "@/frontend/components/ui/dropdown-menu";
 import {
@@ -24,9 +23,7 @@ interface OrgSwitcherProps {
 
 export default function OrgSwitcher({ currentOrg, orgs }: OrgSwitcherProps) {
 	const { isMobile } = useSidebar();
-	const [activeOrg, setActiveOrg] = React.useState(
-		orgs.find((org) => org.id === currentOrg),
-	);
+	const [activeOrg] = React.useState(orgs.find((org) => org.id === currentOrg));
 
 	if (!activeOrg) return null;
 
@@ -44,7 +41,6 @@ export default function OrgSwitcher({ currentOrg, orgs }: OrgSwitcherProps) {
 							</div>
 							<div className="grid flex-1 text-left text-sm leading-tight">
 								<span className="truncate font-semibold">{activeOrg.name}</span>
-								{/* <span className="truncate text-xs">{activeOrg.plan}</span> */}
 							</div>
 							<ChevronsUpDown className="ml-auto" />
 						</SidebarMenuButton>
@@ -58,26 +54,11 @@ export default function OrgSwitcher({ currentOrg, orgs }: OrgSwitcherProps) {
 						<DropdownMenuLabel className="text-muted-foreground text-xs">
 							Teams
 						</DropdownMenuLabel>
-						{orgs.map((org, index) => (
-							<DropdownMenuItem
-								key={org.name}
-								onClick={() => setActiveOrg(org)}
-								className="gap-2 p-2"
-							>
-								<div className="flex size-6 items-center justify-center rounded-sm border">
-									{/* <team.logo className="size-4 shrink-0" /> */}
-								</div>
-								{org.name}
-								{/* <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut> */}
+						{orgs.map((org) => (
+							<DropdownMenuItem key={org.name} className="gap-2 p-2" asChild>
+								<a href={`/api/auth/login?org_code=${org.id}`}>{org.name}</a>
 							</DropdownMenuItem>
 						))}
-						{/* <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                <Plus className="size-4" />
-              </div>
-              <div className="font-medium text-muted-foreground">Add team</div>
-            </DropdownMenuItem> */}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</SidebarMenuItem>

@@ -8,32 +8,25 @@ import {
 	SidebarHeader,
 	SidebarRail,
 } from "@/frontend/components/ui/sidebar";
-import { useCurrentUser, useUserOrgs } from "@/frontend/hooks/users";
+import type { CurrentUser, UserOrgs } from "@/frontend/hooks/users";
 
-export default function AppSidebar({
-	...props
-}: React.ComponentProps<typeof Sidebar>) {
-	const user = useCurrentUser();
+interface SidebarProps {
+	currentOrg: string | null;
+	orgs: NonNullable<UserOrgs>["orgs"];
+	user: NonNullable<CurrentUser>;
+}
 
-	if (!user.data) return null;
-
-	const userOrgsQuery = useUserOrgs(user.data.id);
-
-	if (!userOrgsQuery.data) return null;
-
+export default function AppSidebar({ currentOrg, orgs, user }: SidebarProps) {
 	return (
-		<Sidebar collapsible="icon" {...props}>
+		<Sidebar collapsible="icon">
 			<SidebarHeader>
-				<OrgSwitcher
-					currentOrg={user.data.current_org}
-					orgs={userOrgsQuery.data?.orgs || []}
-				/>
+				<OrgSwitcher currentOrg={currentOrg} orgs={orgs} />
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={user.data} />
+				<NavUser user={user} />
 			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
