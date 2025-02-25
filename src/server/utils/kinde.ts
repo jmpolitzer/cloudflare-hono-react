@@ -1,18 +1,8 @@
-/**
- * TODO:
- * 1. Sign up to a specific organization.
- * 		- create_org
- * 2. Invite users to organization.
- * 3. Remove users from organization.
- * **/
-
 import {
-	Configuration,
 	GrantType,
-	OrganizationsApi,
-	UsersApi,
 	createKindeServerClient,
 } from "@kinde-oss/kinde-typescript-sdk";
+import { init as initKindeManagementApi } from "@kinde/management-api-js";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 
 import type { SessionManager, UserType } from "@kinde-oss/kinde-typescript-sdk";
@@ -21,8 +11,6 @@ import type { CookieOptions } from "hono/utils/cookie";
 
 interface Variables {
 	kindeClient: ReturnType<typeof initKindeClient>;
-	orgsApi: OrganizationsApi;
-	usersApi: UsersApi;
 	// Snake case is used to match the API response.
 	user: UserType & { current_org: string | null };
 }
@@ -35,8 +23,6 @@ interface KindeBindings {
 	KINDE_LOGOUT_REDIRECT_URL: string;
 	KINDE_M2M_ID: string;
 	KINDE_M2M_SECRET: string;
-	KINDE_API_AUDIENCE: string;
-	KINDE_API_SCOPE: string;
 }
 
 const initKindeClient = (bindings: KindeBindings) =>
@@ -52,15 +38,6 @@ const initKindeClient = (bindings: KindeBindings) =>
 		logoutRedirectURL: bindings.KINDE_LOGOUT_REDIRECT_URL!,
 	});
 
-const initKindeAPI = (bindings: KindeBindings) =>
-	createKindeServerClient(GrantType.CLIENT_CREDENTIALS, {
-		authDomain: bindings.KINDE_AUTH_DOMAIN,
-		clientId: bindings.KINDE_M2M_ID,
-		clientSecret: bindings.KINDE_M2M_SECRET,
-		audience: bindings.KINDE_API_AUDIENCE,
-		scope: bindings.KINDE_API_SCOPE,
-	});
-
 export const getKindeClient: MiddlewareHandler<{
 	Bindings: KindeBindings;
 	Variables: Variables;
@@ -71,22 +48,16 @@ export const getKindeClient: MiddlewareHandler<{
 	await next();
 };
 
-export const getKindeApi: MiddlewareHandler<{
+export const initKindeApi: MiddlewareHandler<{
 	Bindings: KindeBindings;
 	Variables: Variables;
 }> = async (c, next) => {
-	const kindeApi = initKindeAPI(c.env);
-	const token = await kindeApi.getToken(sessionManager(c));
-	const config = new Configuration({
-		basePath: c.env.KINDE_AUTH_DOMAIN,
-		accessToken: token,
-		headers: { Accept: "application/json" },
+	initKindeManagementApi({
+		kindeDomain: c.env.KINDE_AUTH_DOMAIN,
+		clientId: c.env.KINDE_M2M_ID,
+		clientSecret: c.env.KINDE_M2M_SECRET,
 	});
-	const usersApi = new UsersApi(config);
-	const orgsApi = new OrganizationsApi(config);
 
-	c.set("orgsApi", orgsApi);
-	c.set("usersApi", usersApi);
 	await next();
 };
 

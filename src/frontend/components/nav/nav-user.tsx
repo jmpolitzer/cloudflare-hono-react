@@ -26,7 +26,7 @@ export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 	const { isMobile } = useSidebar();
 	const fullName = `${user.given_name ?? ""} ${user.family_name ?? ""}`;
 	const picture = user.picture ?? undefined;
-	console.log("org switcher", user);
+
 	return (
 		<SidebarMenu>
 			<SidebarMenuItem>

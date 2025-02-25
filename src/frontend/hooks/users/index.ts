@@ -23,4 +23,18 @@ export const useCurrentUser = () => {
 	return useQuery(getCurrentUserQueryOptions);
 };
 
+export const useUserOrgs = (userId: string) => {
+	return useQuery({
+		queryKey: ["user-orgs"],
+		queryFn: async () => {
+			const res = await client.api.users[":id"].orgs.$get({
+				param: { id: userId },
+			});
+
+			return await res.json();
+		},
+	});
+};
+
 export type CurrentUser = ReturnType<typeof useCurrentUser>["data"];
+export type UserOrgs = ReturnType<typeof useUserOrgs>["data"];

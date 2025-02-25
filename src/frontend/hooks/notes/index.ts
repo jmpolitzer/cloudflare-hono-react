@@ -44,11 +44,11 @@ export function useCreateNote() {
 		InferRequestType<typeof client.api.notes.$post>["form"]
 	>({
 		mutationFn: async (newNote) => {
-			const response = await client.api.notes.$post({
+			const res = await client.api.notes.$post({
 				form: newNote,
 			});
 
-			return response.json();
+			return res.json();
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["notes"] });

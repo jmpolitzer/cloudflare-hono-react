@@ -4,6 +4,10 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { getCurrentUserQueryOptions } from "../hooks/users";
 
 const Component = () => {
+	/*
+		Check to see if a user exists prior to loading any authenticated routes.
+		User is set in route context by the beforeLoad function below. 
+	*/
 	const { user } = Route.useRouteContext();
 
 	if (!user) {

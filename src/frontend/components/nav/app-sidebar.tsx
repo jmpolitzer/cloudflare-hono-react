@@ -1,6 +1,6 @@
-import NavHeader from "@/frontend/components/nav/nav-header";
 import NavMain from "@/frontend/components/nav/nav-main";
 import NavUser from "@/frontend/components/nav/nav-user";
+import OrgSwitcher from "@/frontend/components/nav/org-switcher";
 import {
 	Sidebar,
 	SidebarContent,
@@ -8,7 +8,7 @@ import {
 	SidebarHeader,
 	SidebarRail,
 } from "@/frontend/components/ui/sidebar";
-import { useCurrentUser } from "@/frontend/hooks/users";
+import { useCurrentUser, useUserOrgs } from "@/frontend/hooks/users";
 
 export default function AppSidebar({
 	...props
@@ -17,10 +17,17 @@ export default function AppSidebar({
 
 	if (!user.data) return null;
 
+	const userOrgsQuery = useUserOrgs(user.data.id);
+
+	if (!userOrgsQuery.data) return null;
+
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
-				<NavHeader />
+				<OrgSwitcher
+					currentOrg={user.data.current_org}
+					orgs={userOrgsQuery.data?.orgs || []}
+				/>
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain />
