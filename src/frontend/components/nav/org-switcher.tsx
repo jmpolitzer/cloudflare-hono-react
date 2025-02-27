@@ -1,5 +1,4 @@
 import { ChevronsUpDown } from "lucide-react";
-import * as React from "react";
 
 import {
 	DropdownMenu,
@@ -23,7 +22,7 @@ interface OrgSwitcherProps {
 
 export default function OrgSwitcher({ currentOrg, orgs }: OrgSwitcherProps) {
 	const { isMobile } = useSidebar();
-	const [activeOrg] = React.useState(orgs.find((org) => org.id === currentOrg));
+	const activeOrg = orgs.find((org) => org.id === currentOrg);
 
 	if (!activeOrg) return null;
 

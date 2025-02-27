@@ -1,5 +1,6 @@
 import { auth } from "@/server/routes/auth";
 import { notes } from "@/server/routes/notes";
+import { orgs } from "@/server/routes/orgs";
 import { topics } from "@/server/routes/topics";
 import { users } from "@/server/routes/users";
 import { Hono } from "hono";
@@ -11,6 +12,7 @@ const app = new Hono()
 	.route("/notes", notes)
 	.route("/topics", topics)
 	.route("/users", users)
+	.route("/orgs", orgs)
 	.route("/auth", auth);
 
 // Export app type for client (hc)
