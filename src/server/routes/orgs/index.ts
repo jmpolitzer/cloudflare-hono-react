@@ -1,20 +1,35 @@
-import { zValidator } from "@hono/zod-validator";
-import { Organizations, Users } from "@kinde/management-api-js";
-import { Hono } from "hono";
+/**
+ * TODO:
+ * 1. Add org switcher to the frontend.✅
+ * 2. Add org switcher to the backend.✅
+ * 3. Edit organization name ✅
+ * 4. Add org ownership to notes and reset org context
+ * 5. Move form components to common directory.✅
+ * 6. Invite users to organization.✅
+ * 7. Remove users from organization.✅
+ * 8. Ensure routes are protected via Postman
+ * **/
+
 import {
 	getKindeClient,
 	getUser,
 	initKindeApi,
 	sessionManager,
-} from "../../utils/kinde";
-import { editOrganizationSchema } from "./validation";
+} from "@/server/utils/kinde";
+import {
+	editOrganizationSchema,
+	inviteUserToOrgSchema,
+} from "@/shared/validations/organization";
+import { zValidator } from "@hono/zod-validator";
+import { Organizations, Users } from "@kinde/management-api-js";
+import { Hono } from "hono";
 
 // Create Hono app resource group with Cloudflare bindings
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 export const orgs = app
 	.use(getKindeClient)
-	.use(getUser) // Checks that request is authenticated
+	.use(getUser)
 	.use(initKindeApi) // Inits the Kinde management API (Organizations, Users, etc.)
 	.patch(
 		"/:orgId",
@@ -65,60 +80,98 @@ export const orgs = app
 				);
 			}
 		},
-	);
+	)
+	.get("/:orgId/users", async (c) => {
+		const { orgId } = c.req.param();
 
-// Invite users to organization
-// .post("/:orgId/invite", async (c) => {
-//   const { orgId } = c.req.param();
-//   const { email, role } = await c.req.json();
+		try {
+			const orgUsers = await Organizations.getOrganizationUsers({
+				orgCode: orgId,
+			});
 
-//   try {
-//     const response = await c.var.kindeClient.createOrganizationUserInvitation(
-//       sessionManager(c),
-//       {
-//         organization_id: orgId,
-//         email: email,
-//         role: role || "member", // Default to 'member' if no role specified
-//       }
-//     );
+			return c.json({
+				success: true,
+				users: orgUsers,
+			});
+		} catch (error) {
+			return c.json(
+				{
+					success: false,
+					error,
+				},
+				400,
+			);
+		}
+	})
+	.post(
+		"/:orgId/invite",
+		zValidator("form", inviteUserToOrgSchema, (result, c) => {
+			if (!result.success) {
+				return c.json(
+					{
+						success: false,
+						error: result.error,
+					},
+					400,
+				);
+			}
+		}),
+		async (c) => {
+			const { orgId } = c.req.param();
+			const formData = c.req.valid("form");
 
-//     return c.json({
-//       success: true,
-//       message: `Invitation sent to ${email}`,
-//       invitation: response,
-//     });
-//   } catch (error) {
-//     return c.json(
-//       {
-//         success: false,
-//         error: error.message,
-//       },
-//       400
-//     );
-//   }
-// })
+			try {
+				await Users.createUser({
+					requestBody: {
+						organization_code: orgId,
+						profile: {
+							given_name: formData.firstName,
+							family_name: formData.lastName,
+						},
+						identities: [
+							{
+								type: "email",
+								details: {
+									email: formData.email,
+								},
+							},
+						],
+					},
+				});
 
-// // Remove users from organization
-// .delete("/:orgId/users/:userId", async (c) => {
-//   const { orgId, userId } = c.req.param();
+				return c.json({
+					success: true,
+				});
+			} catch (error) {
+				return c.json(
+					{
+						success: false,
+						error,
+					},
+					400,
+				);
+			}
+		},
+	)
+	.delete("/:orgId/users/:userId", async (c) => {
+		const { orgId, userId } = c.req.param();
 
-//   try {
-//     await c.var.kindeClient.removeOrganizationUser(sessionManager(c), {
-//       organization_id: orgId,
-//       user_id: userId,
-//     });
+		try {
+			await Organizations.removeOrganizationUser({
+				orgCode: orgId,
+				userId,
+			});
 
-//     return c.json({
-//       success: true,
-//       message: `User ${userId} removed from organization ${orgId}`,
-//     });
-//   } catch (error) {
-//     return c.json(
-//       {
-//         success: false,
-//         error: error.message,
-//       },
-//       400
-//     );
-//   }
-// });
+			return c.json({
+				success: true,
+			});
+		} catch (error) {
+			return c.json(
+				{
+					success: false,
+					error,
+				},
+				400,
+			);
+		}
+	});

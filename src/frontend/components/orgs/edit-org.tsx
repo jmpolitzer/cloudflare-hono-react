@@ -1,24 +1,13 @@
+import { SubmitButton, TextInput } from "@/frontend/components/forms";
 import { Button } from "@/frontend/components/ui/button";
-import { useEditOrg, zodOrgSchema } from "@/frontend/hooks/orgs";
+import { useEditOrg } from "@/frontend/hooks/orgs";
+import { editOrganizationSchema } from "@/shared/validations/organization";
 import { useForm } from "@tanstack/react-form";
 import { PencilIcon } from "lucide-react";
 import { useState } from "react";
 
-import type { OrgSchema } from "@/frontend/hooks/orgs";
+import type { EditOrgSchema } from "@/frontend/hooks/orgs";
 import type { UserOrgs } from "@/frontend/hooks/users";
-import type { FieldApi } from "@tanstack/react-form";
-
-// biome-ignore lint/suspicious/noExplicitAny: Generic types are inferred
-function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
-	return (
-		<>
-			{field.state.meta.isTouched && field.state.meta.errors.length ? (
-				<em>{field.state.meta.errors.join(",")}</em>
-			) : null}
-			{field.state.meta.isValidating ? "Validating..." : null}
-		</>
-	);
-}
 
 interface EditOrgProps {
 	org: NonNullable<UserOrgs>["orgs"][0];
@@ -28,7 +17,7 @@ export default function EditOrg({ org }: EditOrgProps) {
 	const [isEditing, setIsEditing] = useState(false);
 	const editOrgMutation = useEditOrg(org.id);
 
-	const form = useForm<OrgSchema>({
+	const form = useForm<EditOrgSchema>({
 		defaultValues: {
 			name: org.name,
 		},
@@ -38,7 +27,7 @@ export default function EditOrg({ org }: EditOrgProps) {
 			form.reset();
 		},
 		validators: {
-			onChange: zodOrgSchema,
+			onChange: editOrganizationSchema,
 		},
 	});
 
@@ -56,28 +45,14 @@ export default function EditOrg({ org }: EditOrgProps) {
 						<form.Field
 							name="name"
 							// biome-ignore lint/correctness/noChildrenProp: Optimize later
-							children={(field) => (
-								<>
-									<label htmlFor={field.name}>Title:</label>
-									<input
-										id={field.name}
-										name={field.name}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-									/>
-									<FieldInfo field={field} />
-								</>
-							)}
+							children={(field) => <TextInput field={field} label="Name" />}
 						/>
 					</div>
 					<form.Subscribe
 						selector={(state) => [state.canSubmit, state.isSubmitting]}
 						// biome-ignore lint/correctness/noChildrenProp: Optimize later
 						children={([canSubmit, isSubmitting]) => (
-							<Button type="submit" disabled={!canSubmit}>
-								{isSubmitting ? "Submitting..." : "Submit"}
-							</Button>
+							<SubmitButton isSubmitting={isSubmitting} canSubmit={canSubmit} />
 						)}
 					/>
 				</form>

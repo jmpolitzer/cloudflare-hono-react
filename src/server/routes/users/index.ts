@@ -1,15 +1,5 @@
-/**
- * TODO:
- * 1. Add org switcher to the frontend.✅
- * 2. Add org switcher to the backend.✅
- * 3. Edit organization name - reset org context
- * 4. Invite users to organization.
- * 5. Remove users from organization.
- * 6. Ensure routes are protected via Postman
- * **/
-
+import { getKindeClient, getUser, sessionManager } from "@/server/utils/kinde";
 import { Hono } from "hono";
-import { getKindeClient, getUser, sessionManager } from "../../utils/kinde";
 
 // Create Hono app resource group with Cloudflare bindings
 const app = new Hono<{ Bindings: CloudflareBindings }>();
