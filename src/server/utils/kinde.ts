@@ -16,11 +16,11 @@ interface Variables {
 }
 
 interface KindeBindings {
+	BASE_URL: string;
 	KINDE_AUTH_DOMAIN: string;
 	KINDE_CLIENT_ID: string;
 	KINDE_CLIENT_SECRET: string;
 	KINDE_REDIRECT_URL: string;
-	KINDE_LOGOUT_REDIRECT_URL: string;
 	KINDE_M2M_ID: string;
 	KINDE_M2M_SECRET: string;
 }
@@ -35,7 +35,7 @@ const initKindeClient = (bindings: KindeBindings) =>
 		// biome-ignore lint/style/noNonNullAssertion: Needed with strict:true
 		redirectURL: bindings.KINDE_REDIRECT_URL!,
 		// biome-ignore lint/style/noNonNullAssertion: Needed with strict:true
-		logoutRedirectURL: bindings.KINDE_LOGOUT_REDIRECT_URL!,
+		logoutRedirectURL: bindings.BASE_URL!,
 	});
 
 export const getKindeClient: MiddlewareHandler<{

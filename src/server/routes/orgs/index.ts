@@ -1,15 +1,7 @@
-/**
- * TODO:
- * 1. Add org switcher to the frontend.✅
- * 2. Add org switcher to the backend.✅
- * 3. Edit organization name ✅
- * 4. Add org ownership to notes and reset org context
- * 5. Move form components to common directory.✅
- * 6. Invite users to organization.✅
- * 7. Remove users from organization.✅
- * 8. Ensure routes are protected via Postman
- * **/
-
+import {
+	initResendEmailer,
+	sendInviteUserToOrgEmail,
+} from "@/server/utils/email/resend";
 import {
 	getKindeClient,
 	getUser,
@@ -31,6 +23,7 @@ export const orgs = app
 	.use(getKindeClient)
 	.use(getUser)
 	.use(initKindeApi) // Inits the Kinde management API (Organizations, Users, etc.)
+	.use(initResendEmailer) // Inits the Resend emailer
 	.patch(
 		"/:orgId",
 		zValidator("form", editOrganizationSchema, (result, c) => {
@@ -46,6 +39,7 @@ export const orgs = app
 		}),
 		async (c) => {
 			const { orgId } = c.req.param();
+			c.req.url;
 			const formData = c.req.valid("form");
 
 			try {
@@ -138,6 +132,16 @@ export const orgs = app
 						],
 					},
 				});
+
+				/* Send email invitation to new org user. */
+				const orgLink = `${c.env.BASE_URL}/api/auth/login?org_code=${orgId}`;
+				const { data, error } = await sendInviteUserToOrgEmail(
+					c.var.resendClient,
+					formData.email,
+					formData.firstName,
+					orgLink,
+					orgId,
+				);
 
 				return c.json({
 					success: true,
