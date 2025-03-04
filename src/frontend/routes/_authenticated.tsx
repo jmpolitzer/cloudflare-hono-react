@@ -14,12 +14,22 @@ const Component = () => {
 		User is set in route context by the beforeLoad function below. 
 	*/
 	const { userOrgs, user } = Route.useRouteContext();
-	const currentOrg = userOrgs?.orgs.find((org) => org.id === user?.current_org);
 
 	if (!user) {
 		return <Login />;
 	}
 
+	/*
+		Redirect to registration if user is not part of any org.
+		This can happen if a user is removed from an org by an admin.
+	*/
+	if (!userOrgs || !userOrgs.orgs) {
+		return <Login orgless />;
+	}
+
+	const currentOrg = userOrgs.orgs.find((org) => org.id === user?.current_org);
+
+	// Force user to rename org.
 	if (currentOrg && currentOrg.name === DEFAULT_ORG_NAME) {
 		return (
 			<div>
