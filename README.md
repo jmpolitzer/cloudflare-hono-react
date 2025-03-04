@@ -20,6 +20,7 @@ Create Two Kinde Applications:
 1. Backend Web
 
 - App > Settings > Tokens > ID Token > Organizations (array) - Needed for Org Switcher
+- Create two roles: admin and basic
 
 2. M2M for Management API
 

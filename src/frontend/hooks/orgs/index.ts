@@ -3,13 +3,39 @@ import { hc } from "hono/client";
 import type { z } from "zod";
 
 import type {
-	editOrganizationSchema,
+	createOrEditOrgSchema,
 	inviteUserToOrgSchema,
 } from "@/shared/validations/organization";
 import type { AppType } from "@app-type";
 import type { InferRequestType, InferResponseType } from "hono";
 
 const client = hc<AppType>("/");
+
+export function useCreateOrg() {
+	const queryClient = useQueryClient();
+
+	return useMutation<
+		InferResponseType<typeof client.api.orgs.$post>,
+		Error,
+		InferRequestType<typeof client.api.orgs.$post>["form"]
+	>({
+		mutationFn: async (orgForm) => {
+			const res = await client.api.orgs.$post({
+				form: orgForm,
+			});
+
+			return res.json();
+		},
+		onSettled: async () => {
+			return await queryClient.invalidateQueries({
+				queryKey: ["user-orgs"],
+			});
+		},
+		onError: (error: Error) => {
+			throw new Error(error.message);
+		},
+	});
+}
 
 export function useEditOrg(orgId: string) {
 	const queryClient = useQueryClient();
@@ -110,5 +136,5 @@ export function useOrgUsers(orgId: string) {
 	});
 }
 
-export type EditOrgSchema = z.infer<typeof editOrganizationSchema>;
+export type CreateOrEditOrgSchema = z.infer<typeof createOrEditOrgSchema>;
 export type InviteUserToOrgSchema = z.infer<typeof inviteUserToOrgSchema>;

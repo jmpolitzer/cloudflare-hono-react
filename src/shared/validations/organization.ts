@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const editOrganizationSchema = z.object({
+export const createOrEditOrgSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 });
 

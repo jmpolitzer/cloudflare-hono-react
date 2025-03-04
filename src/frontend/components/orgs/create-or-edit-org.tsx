@@ -1,33 +1,45 @@
 import { SubmitButton, TextInput } from "@/frontend/components/forms";
 import { Button } from "@/frontend/components/ui/button";
-import { useEditOrg } from "@/frontend/hooks/orgs";
-import { editOrganizationSchema } from "@/shared/validations/organization";
+import { useCreateOrg, useEditOrg } from "@/frontend/hooks/orgs";
+import { createOrEditOrgSchema } from "@/shared/validations/organization";
 import { useForm } from "@tanstack/react-form";
+import { useNavigate } from "@tanstack/react-router";
 import { PencilIcon } from "lucide-react";
 import { useState } from "react";
 
-import type { EditOrgSchema } from "@/frontend/hooks/orgs";
+import type { CreateOrEditOrgSchema } from "@/frontend/hooks/orgs";
 import type { UserOrgs } from "@/frontend/hooks/users";
 
-interface EditOrgProps {
-	org: NonNullable<UserOrgs>["orgs"][0];
+interface CreateOrEditOrgProps {
+	isOrgInit?: boolean;
+	org?: NonNullable<UserOrgs>["orgs"][0];
 }
 
-export default function EditOrg({ org }: EditOrgProps) {
-	const [isEditing, setIsEditing] = useState(false);
-	const editOrgMutation = useEditOrg(org.id);
+export default function CreateOrEditOrg({
+	isOrgInit = false,
+	org,
+}: CreateOrEditOrgProps) {
+	const [isEditing, setIsEditing] = useState(!org || isOrgInit);
+	const navigate = useNavigate();
+	const createOrgMutation = useCreateOrg();
+	const editOrgMutation = useEditOrg(org?.id ?? "");
 
-	const form = useForm<EditOrgSchema>({
+	const form = useForm<CreateOrEditOrgSchema>({
 		defaultValues: {
-			name: org.name,
+			name: org?.name ?? "",
 		},
 		onSubmit: async ({ value }) => {
-			await editOrgMutation.mutateAsync(value);
+			await (org ? editOrgMutation : createOrgMutation).mutateAsync(value);
 			setIsEditing(false);
-			form.reset();
+
+			if (isOrgInit) {
+				navigate({ to: "/" });
+			} else {
+				form.reset();
+			}
 		},
 		validators: {
-			onChange: editOrganizationSchema,
+			onChange: createOrEditOrgSchema,
 		},
 	});
 
@@ -58,7 +70,7 @@ export default function EditOrg({ org }: EditOrgProps) {
 				</form>
 			) : (
 				<div>
-					<span>{org.name}</span>
+					<span>{org?.name}</span>
 					<Button
 						onClick={() => {
 							setIsEditing(true);

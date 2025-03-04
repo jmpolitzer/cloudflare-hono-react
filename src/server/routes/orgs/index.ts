@@ -9,7 +9,7 @@ import {
 	sessionManager,
 } from "@/server/utils/kinde";
 import {
-	editOrganizationSchema,
+	createOrEditOrgSchema,
 	inviteUserToOrgSchema,
 } from "@/shared/validations/organization";
 import { zValidator } from "@hono/zod-validator";
@@ -24,9 +24,47 @@ export const orgs = app
 	.use(getUser)
 	.use(initKindeApi) // Inits the Kinde management API (Organizations, Users, etc.)
 	.use(initResendEmailer) // Inits the Resend emailer
+	.post(
+		"/",
+		zValidator("form", createOrEditOrgSchema, (result, c) => {
+			if (!result.success) {
+				return c.json(
+					{
+						success: false,
+						error: result.error,
+					},
+					400,
+				);
+			}
+		}),
+		async (c) => {
+			const formData = c.req.valid("form");
+
+			try {
+				const res = await Organizations.createOrganization({
+					requestBody: {
+						...formData,
+						is_allow_registrations: true,
+					},
+				});
+
+				return c.json({
+					success: true,
+				});
+			} catch (error) {
+				return c.json(
+					{
+						success: false,
+						error,
+					},
+					400,
+				);
+			}
+		},
+	)
 	.patch(
 		"/:orgId",
-		zValidator("form", editOrganizationSchema, (result, c) => {
+		zValidator("form", createOrEditOrgSchema, (result, c) => {
 			if (!result.success) {
 				return c.json(
 					{
@@ -39,7 +77,6 @@ export const orgs = app
 		}),
 		async (c) => {
 			const { orgId } = c.req.param();
-			c.req.url;
 			const formData = c.req.valid("form");
 
 			try {
@@ -51,7 +88,7 @@ export const orgs = app
 				});
 
 				/*
-          User orgs are retrieved from the user's claims. To update the org name in the 
+          User orgs are retrieved from the user's claims. To update the org name in the
           user's claims, we need to refresh the user's claims.
         */
 				await Users.refreshUserClaims({
@@ -135,7 +172,7 @@ export const orgs = app
 
 				/* Send email invitation to new org user. */
 				const orgLink = `${c.env.BASE_URL}/api/auth/login?org_code=${orgId}`;
-				const { data, error } = await sendInviteUserToOrgEmail(
+				await sendInviteUserToOrgEmail(
 					c.var.resendClient,
 					formData.email,
 					formData.firstName,

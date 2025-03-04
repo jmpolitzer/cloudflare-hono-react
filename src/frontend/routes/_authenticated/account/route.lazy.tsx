@@ -1,4 +1,4 @@
-import EditOrg from "@/frontend/components/orgs/edit-org";
+import EditOrg from "@/frontend/components/orgs/create-or-edit-org";
 import InviteUserToOrg from "@/frontend/components/orgs/invite-user";
 import { Button } from "@/frontend/components/ui/button";
 import { useOrgUsers, useRemoveUserFromOrg } from "@/frontend/hooks/orgs";
@@ -15,19 +15,16 @@ function AccountComponent() {
 	if (!currentUser.data) return null;
 
 	const userOrgsQuery = useUserOrgs(currentUser.data.id);
-
-	const { isPending: orgUsersPending, data: orgUsers } = useOrgUsers(
-		currentUser.data.current_org || "",
-	);
-
 	if (!userOrgsQuery.data) return null;
 
 	const currentOrg = userOrgsQuery.data.orgs.find(
 		(org) => org.id === currentUser.data.current_org,
 	);
-
 	if (!currentOrg) return null;
 
+	const { isPending: orgUsersPending, data: orgUsers } = useOrgUsers(
+		currentOrg.id,
+	);
 	const removeUserFromOrgMutation = useRemoveUserFromOrg();
 
 	return (
