@@ -1,1 +1,1 @@
-export const DEFAULT_ORG_NAME = "My Organization";
+export const DEFAULT_ORG_NAME = "Default Org";

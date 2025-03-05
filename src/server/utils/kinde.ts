@@ -2,17 +2,23 @@ import {
 	GrantType,
 	createKindeServerClient,
 } from "@kinde-oss/kinde-typescript-sdk";
-import { init as initKindeManagementApi } from "@kinde/management-api-js";
+import {
+	Roles,
+	Users,
+	init as initKindeManagementApi,
+} from "@kinde/management-api-js";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 
 import type { SessionManager, UserType } from "@kinde-oss/kinde-typescript-sdk";
+import type { get_roles_response } from "@kinde/management-api-js";
 import type { Context, MiddlewareHandler } from "hono";
 import type { CookieOptions } from "hono/utils/cookie";
 
 interface Variables {
 	kindeClient: ReturnType<typeof initKindeClient>;
+	roles: get_roles_response["roles"];
 	// Snake case is used to match the API response.
-	user: UserType & { current_org: string | null };
+	user: UserType & { current_org: string | null } & { permissions: string[] };
 }
 
 interface KindeBindings {
@@ -76,14 +82,53 @@ export const getUser: MiddlewareHandler<{
 		if (!c.var.user) {
 			const profile = await c.var.kindeClient.getUserProfile(manager);
 			const currentOrg = await c.var.kindeClient.getOrganization(manager);
+			const permissions = await c.var.kindeClient.getPermissions(manager);
 
-			c.set("user", { ...profile, current_org: currentOrg.orgCode });
+			c.set("user", {
+				...profile,
+				current_org: currentOrg.orgCode,
+				permissions: permissions.permissions,
+			});
 		}
 
 		await next();
 	} catch (e) {
-		console.error(e);
 		return c.json({ message: "Unauthorized" }, 401);
+	}
+};
+
+export const refreshUser = async ({
+	userId,
+	kindeClient,
+	manager,
+}: {
+	kindeClient: ReturnType<typeof initKindeClient>;
+	manager: SessionManager;
+	userId: string;
+}) => {
+	/*
+    User orgs are retrieved from the user's claims. To update the org name in the
+    user's claims, we need to refresh the user's claims.
+  */
+	await Users.refreshUserClaims({
+		userId,
+	});
+
+	/* Refresh the user's tokens to ensure that the user's claims are up-to-date */
+	await kindeClient.refreshTokens(manager);
+};
+
+export const getRoles: MiddlewareHandler<{
+	Variables: Variables;
+}> = async (c, next) => {
+	try {
+		const orgRoles = await Roles.getRoles();
+
+		c.set("roles", orgRoles.roles || []);
+
+		await next();
+	} catch (e) {
+		return c.json({ message: "Something went wrong" }, 500);
 	}
 };
 

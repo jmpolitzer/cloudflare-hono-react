@@ -4,8 +4,10 @@ import {
 } from "@/server/utils/email/resend";
 import {
 	getKindeClient,
+	getRoles,
 	getUser,
 	initKindeApi,
+	refreshUser,
 	sessionManager,
 } from "@/server/utils/kinde";
 import {
@@ -23,7 +25,9 @@ export const orgs = app
 	.use(getKindeClient)
 	.use(getUser)
 	.use(initKindeApi) // Inits the Kinde management API (Organizations, Users, etc.)
+	.use(getRoles)
 	.use(initResendEmailer) // Inits the Resend emailer
+	/* Create Organization */
 	.post(
 		"/",
 		zValidator("form", createOrEditOrgSchema, (result, c) => {
@@ -62,6 +66,7 @@ export const orgs = app
 			}
 		},
 	)
+	/* Edit Organization */
 	.patch(
 		"/:orgId",
 		zValidator("form", createOrEditOrgSchema, (result, c) => {
@@ -87,16 +92,11 @@ export const orgs = app
 					},
 				});
 
-				/*
-          User orgs are retrieved from the user's claims. To update the org name in the
-          user's claims, we need to refresh the user's claims.
-        */
-				await Users.refreshUserClaims({
+				await refreshUser({
 					userId: c.var.user.id,
+					kindeClient: c.var.kindeClient,
+					manager: sessionManager(c),
 				});
-
-				/* Refresh the user's tokens to ensure that the user's claims are up-to-date */
-				await c.var.kindeClient.refreshTokens(sessionManager(c));
 
 				return c.json({
 					success: true,
@@ -112,6 +112,7 @@ export const orgs = app
 			}
 		},
 	)
+	/* Get Organization Users */
 	.get("/:orgId/users", async (c) => {
 		const { orgId } = c.req.param();
 
@@ -134,6 +135,69 @@ export const orgs = app
 			);
 		}
 	})
+	/* Create admin role for org owner. This allows for user invitations. */
+	.post("/:orgId/activate", async (c) => {
+		const { orgId } = c.req.param();
+
+		try {
+			const orgUsers = await Organizations.getOrganizationUsers({
+				orgCode: orgId,
+			});
+
+			// Fail if org has more than one user. The owner must be the only user.
+			if ((orgUsers.organization_users || []).length > 1) {
+				return c.json({ message: "Unauthorized", success: false }, 401);
+			}
+
+			const foundOrgUser = (orgUsers.organization_users || []).find(
+				(user) => user.id === c.var.user.id,
+			);
+
+			// Fail if user is not in the org.
+			if (!foundOrgUser) {
+				return c.json({ message: "Unauthorized", success: false }, 401);
+			}
+
+			const userRoles = await Organizations.getOrganizationUserRoles({
+				orgCode: orgId,
+				userId: c.var.user.id,
+			});
+
+			// Fail if user already has a role.
+			if ((userRoles.roles || []).length > 0) {
+				return c.json({ message: "Unauthorized", success: false }, 401);
+			}
+
+			await Organizations.createOrganizationUserRole({
+				orgCode: orgId,
+				userId: c.var.user.id,
+				requestBody: {
+					role_id: (c.var.roles || []).find((role) => role.name === "admin")
+						?.id,
+				},
+			});
+
+			// Refresh user claims
+			await refreshUser({
+				userId: c.var.user.id,
+				kindeClient: c.var.kindeClient,
+				manager: sessionManager(c),
+			});
+
+			return c.json({
+				success: true,
+			});
+		} catch (error) {
+			return c.json(
+				{
+					success: false,
+					error,
+				},
+				400,
+			);
+		}
+	})
+	/* Invite User to Organization */
 	.post(
 		"/:orgId/invite",
 		zValidator("form", inviteUserToOrgSchema, (result, c) => {
@@ -152,7 +216,7 @@ export const orgs = app
 			const formData = c.req.valid("form");
 
 			try {
-				await Users.createUser({
+				const user = await Users.createUser({
 					requestBody: {
 						organization_code: orgId,
 						profile: {
@@ -170,8 +234,23 @@ export const orgs = app
 					},
 				});
 
+				const basicRole = (c.var.roles || []).find(
+					(role) => role.name === "basic",
+				);
+
+				if (user.id && basicRole) {
+					await Organizations.createOrganizationUserRole({
+						orgCode: orgId,
+						userId: user.id,
+						requestBody: {
+							role_id: basicRole.id,
+						},
+					});
+				}
+
 				/* Send email invitation to new org user. */
 				const orgLink = `${c.env.BASE_URL}/api/auth/login?org_code=${orgId}`;
+
 				await sendInviteUserToOrgEmail(
 					c.var.resendClient,
 					formData.email,
@@ -194,6 +273,7 @@ export const orgs = app
 			}
 		},
 	)
+	/* Remove User from Organization */
 	.delete("/:orgId/users/:userId", async (c) => {
 		const { orgId, userId } = c.req.param();
 

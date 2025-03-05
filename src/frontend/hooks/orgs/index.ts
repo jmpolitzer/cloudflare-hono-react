@@ -37,6 +37,34 @@ export function useCreateOrg() {
 	});
 }
 
+export function useActivateOrg() {
+	const queryClient = useQueryClient();
+
+	return useMutation<
+		InferResponseType<(typeof client.api.orgs)[":orgId"]["activate"]["$post"]>,
+		Error,
+		InferRequestType<
+			(typeof client.api.orgs)[":orgId"]["activate"]["$post"]
+		>["param"]
+	>({
+		mutationFn: async ({ orgId }) => {
+			const res = await client.api.orgs[":orgId"].activate.$post({
+				param: { orgId },
+			});
+
+			return res.json();
+		},
+		onSettled: async () => {
+			return await queryClient.invalidateQueries({
+				queryKey: ["get-current-user"],
+			});
+		},
+		onError: (error: Error) => {
+			throw new Error(error.message);
+		},
+	});
+}
+
 export function useEditOrg(orgId: string) {
 	const queryClient = useQueryClient();
 

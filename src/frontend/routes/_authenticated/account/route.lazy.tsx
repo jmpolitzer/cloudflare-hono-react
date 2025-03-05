@@ -1,7 +1,11 @@
 import EditOrg from "@/frontend/components/orgs/create-or-edit-org";
 import InviteUserToOrg from "@/frontend/components/orgs/invite-user";
 import { Button } from "@/frontend/components/ui/button";
-import { useOrgUsers, useRemoveUserFromOrg } from "@/frontend/hooks/orgs";
+import {
+	useActivateOrg,
+	useOrgUsers,
+	useRemoveUserFromOrg,
+} from "@/frontend/hooks/orgs";
 import { useCurrentUser, useUserOrgs } from "@/frontend/hooks/users";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { XIcon } from "lucide-react";
@@ -13,7 +17,7 @@ export const Route = createLazyFileRoute("/_authenticated/account")({
 function AccountComponent() {
 	const currentUser = useCurrentUser();
 	if (!currentUser.data) return null;
-
+	console.log(currentUser.data);
 	const userOrgsQuery = useUserOrgs(currentUser.data.id);
 	if (!userOrgsQuery.data) return null;
 
@@ -21,6 +25,8 @@ function AccountComponent() {
 		(org) => org.id === currentUser.data.current_org,
 	);
 	if (!currentOrg) return null;
+
+	const activateOrg = useActivateOrg();
 
 	const { isPending: orgUsersPending, data: orgUsers } = useOrgUsers(
 		currentOrg.id,
@@ -30,6 +36,17 @@ function AccountComponent() {
 	return (
 		<div>
 			<div>My Account!</div>
+			<div>
+				<Button
+					onClick={() =>
+						activateOrg.mutate({
+							orgId: currentOrg.id,
+						})
+					}
+				>
+					Activate Org
+				</Button>
+			</div>
 			<div>
 				<EditOrg org={currentOrg} />
 				{orgUsersPending ? (

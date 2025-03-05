@@ -20,13 +20,20 @@ Create Two Kinde Applications:
 1. Backend Web
 
 - App > Settings > Tokens > ID Token > Organizations (array) - Needed for Org Switcher
-- Create two roles: admin and basic
+- Create two roles and associated permissions:
+  - admin
+    - invite:org_users
+  - basic
 
 2. M2M for Management API
 
 - Define scopes
 
-Create Resend Account
+3. Create Resend Account
 
-1. Add API Key
-2. Verify Domain
+- Add API Key
+- Verify Domain
+
+4. Constants
+
+- export const DEFAULT_ORG_NAME = "Default Org";
