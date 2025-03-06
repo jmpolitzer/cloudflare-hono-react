@@ -1,4 +1,4 @@
-import EditOrg from "@/frontend/components/orgs/create-or-edit-org";
+import EditOrg from "@/frontend/components/orgs/edit-org";
 import InviteUserToOrg from "@/frontend/components/orgs/invite-user";
 import { Button } from "@/frontend/components/ui/button";
 import {
@@ -17,7 +17,7 @@ export const Route = createLazyFileRoute("/_authenticated/account")({
 function AccountComponent() {
 	const currentUser = useCurrentUser();
 	if (!currentUser.data) return null;
-	console.log(currentUser.data);
+
 	const userOrgsQuery = useUserOrgs(currentUser.data.id);
 	if (!userOrgsQuery.data) return null;
 

@@ -11,7 +11,7 @@ import {
 	sessionManager,
 } from "@/server/utils/kinde";
 import {
-	createOrEditOrgSchema,
+	editOrgSchema,
 	inviteUserToOrgSchema,
 } from "@/shared/validations/organization";
 import { zValidator } from "@hono/zod-validator";
@@ -27,49 +27,10 @@ export const orgs = app
 	.use(initKindeApi) // Inits the Kinde management API (Organizations, Users, etc.)
 	.use(getRoles)
 	.use(initResendEmailer) // Inits the Resend emailer
-	/* Create Organization */
-	.post(
-		"/",
-		zValidator("form", createOrEditOrgSchema, (result, c) => {
-			if (!result.success) {
-				return c.json(
-					{
-						success: false,
-						error: result.error,
-					},
-					400,
-				);
-			}
-		}),
-		async (c) => {
-			const formData = c.req.valid("form");
-
-			try {
-				const res = await Organizations.createOrganization({
-					requestBody: {
-						...formData,
-						is_allow_registrations: true,
-					},
-				});
-
-				return c.json({
-					success: true,
-				});
-			} catch (error) {
-				return c.json(
-					{
-						success: false,
-						error,
-					},
-					400,
-				);
-			}
-		},
-	)
 	/* Edit Organization */
 	.patch(
 		"/:orgId",
-		zValidator("form", createOrEditOrgSchema, (result, c) => {
+		zValidator("form", editOrgSchema, (result, c) => {
 			if (!result.success) {
 				return c.json(
 					{

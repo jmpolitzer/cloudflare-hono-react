@@ -2,7 +2,7 @@ import { SubmitButton, TextInput } from "@/frontend/components/forms";
 import { useForm } from "@tanstack/react-form";
 
 import { useInviteUserToOrg } from "@/frontend/hooks/orgs";
-import type { InviteUserToOrgSchema } from "@/frontend/hooks/orgs";
+import type { InviteUserToOrgSchemaType } from "@/frontend/hooks/orgs";
 import type { UserOrgs } from "@/frontend/hooks/users";
 import { inviteUserToOrgSchema } from "@/shared/validations/organization";
 
@@ -13,7 +13,7 @@ interface InviteUserToOrgProps {
 export default function InviteUserToOrg({ org }: InviteUserToOrgProps) {
 	const inviteUserToOrgMutation = useInviteUserToOrg(org.id);
 
-	const form = useForm<InviteUserToOrgSchema>({
+	const form = useForm<InviteUserToOrgSchemaType>({
 		defaultValues: {
 			email: "",
 			firstName: "",

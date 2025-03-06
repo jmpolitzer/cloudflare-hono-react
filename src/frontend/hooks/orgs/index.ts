@@ -1,41 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { hc } from "hono/client";
-import type { z } from "zod";
 
 import type {
-	createOrEditOrgSchema,
+	editOrgSchema,
 	inviteUserToOrgSchema,
 } from "@/shared/validations/organization";
 import type { AppType } from "@app-type";
 import type { InferRequestType, InferResponseType } from "hono";
+import type { z } from "zod";
 
 const client = hc<AppType>("/");
-
-export function useCreateOrg() {
-	const queryClient = useQueryClient();
-
-	return useMutation<
-		InferResponseType<typeof client.api.orgs.$post>,
-		Error,
-		InferRequestType<typeof client.api.orgs.$post>["form"]
-	>({
-		mutationFn: async (orgForm) => {
-			const res = await client.api.orgs.$post({
-				form: orgForm,
-			});
-
-			return res.json();
-		},
-		onSettled: async () => {
-			return await queryClient.invalidateQueries({
-				queryKey: ["user-orgs"],
-			});
-		},
-		onError: (error: Error) => {
-			throw new Error(error.message);
-		},
-	});
-}
 
 export function useActivateOrg() {
 	const queryClient = useQueryClient();
@@ -164,5 +138,5 @@ export function useOrgUsers(orgId: string) {
 	});
 }
 
-export type CreateOrEditOrgSchema = z.infer<typeof createOrEditOrgSchema>;
-export type InviteUserToOrgSchema = z.infer<typeof inviteUserToOrgSchema>;
+export type EditOrgSchemaType = z.infer<typeof editOrgSchema>;
+export type InviteUserToOrgSchemaType = z.infer<typeof inviteUserToOrgSchema>;
