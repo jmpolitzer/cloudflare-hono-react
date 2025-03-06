@@ -13,6 +13,7 @@ import {
 import {
 	editOrgSchema,
 	inviteUserToOrgSchema,
+	updateOrgUserRolesSchema,
 } from "@/shared/validations/organization";
 import { zValidator } from "@hono/zod-validator";
 import { Organizations, Users } from "@kinde/management-api-js";
@@ -199,15 +200,20 @@ export const orgs = app
 					(role) => role.name === "basic",
 				);
 
-				if (user.id && basicRole) {
-					await Organizations.createOrganizationUserRole({
-						orgCode: orgId,
-						userId: user.id,
-						requestBody: {
-							role_id: basicRole.id,
-						},
-					});
+				if (!user.id || !basicRole) {
+					return c.json(
+						{ message: "Something went wrong", success: false },
+						500,
+					);
 				}
+
+				await Organizations.createOrganizationUserRole({
+					orgCode: orgId,
+					userId: user.id,
+					requestBody: {
+						role_id: basicRole.id,
+					},
+				});
 
 				/* Send email invitation to new org user. */
 				const orgLink = `${c.env.BASE_URL}/api/auth/login?org_code=${orgId}`;
@@ -256,4 +262,60 @@ export const orgs = app
 				400,
 			);
 		}
-	});
+	})
+	/* Update user role - a user can only have one role */
+	.patch(
+		"/:orgId/users/:userId/roles",
+		zValidator("form", updateOrgUserRolesSchema, (result, c) => {
+			if (!result.success) {
+				return c.json(
+					{
+						success: false,
+						error: result.error,
+					},
+					400,
+				);
+			}
+		}),
+		async (c) => {
+			const { orgId, userId } = c.req.param();
+			const formData = c.req.valid("form");
+			const roles = c.var.roles || [];
+			const oldRole = roles.find((role) => role.name === formData.oldRoleId);
+			const newRole = roles.find((role) => role.name === formData.newRoleId);
+
+			if (!oldRole || !oldRole.id || !newRole || !newRole.id) {
+				return c.json({ message: "Something went wrong", success: false }, 500);
+			}
+
+			// Add new role
+			try {
+				await Organizations.createOrganizationUserRole({
+					orgCode: orgId,
+					userId,
+					requestBody: {
+						role_id: newRole.id,
+					},
+				});
+
+				// Remove old role
+				await Organizations.deleteOrganizationUserRole({
+					orgCode: orgId,
+					userId,
+					roleId: oldRole.id,
+				});
+
+				return c.json({
+					success: true,
+				});
+			} catch (error) {
+				return c.json(
+					{
+						success: false,
+						error,
+					},
+					400,
+				);
+			}
+		},
+	);

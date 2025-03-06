@@ -16,3 +16,9 @@ export const inviteUserToOrgSchema = z.object({
 export const removeOrgUserSchema = z.object({
 	userId: z.string().min(1, "User ID is required"),
 });
+
+export const updateOrgUserRolesSchema = z.object({
+	userId: z.string().min(1, "User ID is required"),
+	oldRoleId: z.enum(["admin", "basic"]),
+	newRoleId: z.enum(["admin", "basic"]),
+});
