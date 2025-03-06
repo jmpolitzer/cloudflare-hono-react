@@ -22,7 +22,8 @@ Create Two Kinde Applications:
 - App > Settings > Tokens > ID Token > Organizations (array) - Needed for Org Switcher
 - Create two roles and associated permissions:
   - admin
-    - invite:org_users
+    - manage:org
+    - manage:basic_resources
   - basic
 
 2. M2M for Management API

@@ -3,15 +3,14 @@ import { useForm } from "@tanstack/react-form";
 
 import { useInviteUserToOrg } from "@/frontend/hooks/orgs";
 import type { InviteUserToOrgSchemaType } from "@/frontend/hooks/orgs";
-import type { UserOrgs } from "@/frontend/hooks/users";
 import { inviteUserToOrgSchema } from "@/shared/validations/organization";
 
 interface InviteUserToOrgProps {
-	org: NonNullable<UserOrgs>["orgs"][0];
+	orgId: string;
 }
 
-export default function InviteUserToOrg({ org }: InviteUserToOrgProps) {
-	const inviteUserToOrgMutation = useInviteUserToOrg(org.id);
+export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
+	const inviteUserToOrgMutation = useInviteUserToOrg(orgId);
 
 	const form = useForm<InviteUserToOrgSchemaType>({
 		defaultValues: {

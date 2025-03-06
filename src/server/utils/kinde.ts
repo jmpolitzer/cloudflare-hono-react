@@ -122,9 +122,11 @@ export const getRoles: MiddlewareHandler<{
 	Variables: Variables;
 }> = async (c, next) => {
 	try {
-		const orgRoles = await Roles.getRoles();
+		if (!c.var.roles) {
+			const orgRoles = await Roles.getRoles();
 
-		c.set("roles", orgRoles.roles || []);
+			c.set("roles", orgRoles.roles || []);
+		}
 
 		await next();
 	} catch (e) {

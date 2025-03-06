@@ -3,7 +3,6 @@ import { Button } from "@/frontend/components/ui/button";
 import { useEditOrg } from "@/frontend/hooks/orgs";
 import { editOrgSchema } from "@/shared/validations/organization";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
 import { PencilIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -16,7 +15,6 @@ interface CreateOrEditOrgProps {
 
 export default function EditOrg({ org }: CreateOrEditOrgProps) {
 	const [isEditing, setIsEditing] = useState(false);
-	const navigate = useNavigate();
 	const editOrgMutation = useEditOrg(org.id);
 
 	const form = useForm<EditOrgSchemaType>({
