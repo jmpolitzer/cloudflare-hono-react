@@ -8,6 +8,7 @@ import {
 import { useUpdateOrgUserRole } from "@/frontend/hooks/orgs";
 import { updateOrgUserRolesSchema } from "@/shared/validations/organization";
 import { useForm } from "@tanstack/react-form";
+import { toast } from "sonner";
 
 import type { UpdateOrgUserRoleSchemaType } from "@/frontend/hooks/orgs";
 
@@ -36,7 +37,7 @@ export default function OrgUserRoleSelect({
 				newRoleId: value.newRoleId,
 			});
 
-			// show toast message
+			toast("User role updated");
 		},
 		validators: {
 			onChange: updateOrgUserRolesSchema,

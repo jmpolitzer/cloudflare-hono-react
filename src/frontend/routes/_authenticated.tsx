@@ -1,5 +1,6 @@
 import Login from "@/frontend/components/auth/login";
 import Layout from "@/frontend/components/layouts/main";
+import { Toaster } from "@/frontend/components/ui/sonner";
 import {
 	getCurrentUserQueryOptions,
 	getUserOrgsQueryOptions,
@@ -28,6 +29,7 @@ const Component = () => {
 	return (
 		<Layout>
 			<Outlet />
+			<Toaster />
 		</Layout>
 	);
 };
