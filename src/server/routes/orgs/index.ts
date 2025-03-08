@@ -281,7 +281,9 @@ export const orgs = app
 			const { orgId, userId } = c.req.param();
 			const formData = c.req.valid("form");
 			const roles = c.var.roles || [];
-			const oldRole = roles.find((role) => role.name === formData.oldRoleId);
+			const oldRole = roles.find(
+				(role) => role.name === formData.currentRoleId,
+			);
 			const newRole = roles.find((role) => role.name === formData.newRoleId);
 
 			if (!oldRole || !oldRole.id || !newRole || !newRole.id) {

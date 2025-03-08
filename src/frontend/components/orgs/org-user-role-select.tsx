@@ -13,12 +13,14 @@ import { toast } from "sonner";
 import type { UpdateOrgUserRoleSchemaType } from "@/frontend/hooks/orgs";
 
 interface OrgUserRoleSelectProps {
+	currentUserId: string;
 	orgId: string;
-	role: UpdateOrgUserRoleSchemaType["oldRoleId"];
+	role: UpdateOrgUserRoleSchemaType["currentRoleId"];
 	userId: string;
 }
 
 export default function OrgUserRoleSelect({
+	currentUserId,
 	orgId,
 	role,
 	userId,
@@ -27,13 +29,13 @@ export default function OrgUserRoleSelect({
 	const form = useForm<UpdateOrgUserRoleSchemaType>({
 		defaultValues: {
 			userId,
-			oldRoleId: role,
+			currentRoleId: role,
 			newRoleId: role,
 		},
 		onSubmit: async ({ value }) => {
 			await updateOrgUserRoleMutation.mutateAsync({
 				userId,
-				oldRoleId: role,
+				currentRoleId: role,
 				newRoleId: value.newRoleId,
 			});
 
@@ -58,6 +60,7 @@ export default function OrgUserRoleSelect({
 					// biome-ignore lint/correctness/noChildrenProp: Optimize later
 					children={(field) => (
 						<Select
+							disabled={userId === currentUserId}
 							onValueChange={(value) => {
 								field.handleChange(
 									value as UpdateOrgUserRoleSchemaType["newRoleId"],
