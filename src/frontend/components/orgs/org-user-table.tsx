@@ -73,7 +73,6 @@ const columns = [
 // TODO: Rows are not in sync when new users are added or removed.
 export default function OrgUserTable({ currentUserId, orgId }: UserTableProps) {
 	const { isPending: orgUsersPending, data: orgUsers } = useOrgUsers(orgId);
-	console.log("re-rendering");
 	if (!orgUsers && !orgUsersPending) return null;
 
 	const data = useMemo(

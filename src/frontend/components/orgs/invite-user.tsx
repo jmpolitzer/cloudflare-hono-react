@@ -50,6 +50,7 @@ export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 			dialogTriggerRef.current.click();
 		}
 
+		// TODO: Handle Error
 		toast.success(`${values.email} invited successfully.`);
 		form.reset();
 	}

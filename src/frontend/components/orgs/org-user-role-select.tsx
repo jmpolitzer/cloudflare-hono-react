@@ -68,7 +68,7 @@ export default function OrgUserRoleSelect({
 
 								form.handleSubmit();
 							}}
-							defaultValue={field.state.value}
+							value={field.state.value}
 						>
 							<SelectTrigger>
 								<SelectValue placeholder="Select a role" />
