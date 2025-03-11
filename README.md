@@ -25,6 +25,7 @@ Create Two Kinde Applications:
     - manage:org
     - manage:basic_resources
   - basic
+  - Can component
 
 2. M2M for Management API
 

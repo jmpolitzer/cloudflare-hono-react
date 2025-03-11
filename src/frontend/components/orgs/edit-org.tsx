@@ -1,4 +1,4 @@
-import { Button } from "@/frontend/components/ui/button";
+import LoadingButton from "@/frontend/components/buttons/loading-button";
 import {
 	Form,
 	FormControl,
@@ -11,7 +11,6 @@ import { Input } from "@/frontend/components/ui/input";
 import { useEditOrg } from "@/frontend/hooks/orgs";
 import { editOrgSchema } from "@/shared/validations/organization";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -54,13 +53,11 @@ export default function EditOrg({ org }: CreateOrEditOrgProps) {
 						</FormItem>
 					)}
 				/>
-				<Button type="submit">
-					{form.formState.isSubmitting ? (
-						<LoaderIcon className="animate-spin" />
-					) : (
-						"Update"
-					)}
-				</Button>
+				<LoadingButton
+					label="Update"
+					isLoading={form.formState.isSubmitting}
+					type="submit"
+				/>
 			</form>
 		</Form>
 	);

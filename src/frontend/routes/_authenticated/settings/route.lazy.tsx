@@ -1,6 +1,6 @@
+import LoadingButton from "@/frontend/components/buttons/loading-button";
 import OrgManager from "@/frontend/components/orgs/org-manager";
 import Can from "@/frontend/components/rbac/can";
-import { Button } from "@/frontend/components/ui/button";
 import { useActivateOrg } from "@/frontend/hooks/orgs";
 import { useCurrentUser, useUserOrgs } from "@/frontend/hooks/users";
 import { createLazyFileRoute } from "@tanstack/react-router";
@@ -21,7 +21,7 @@ function AccountComponent() {
 	);
 	if (!currentOrg) return null;
 
-	const activateOrg = useActivateOrg();
+	const { isPending, mutate: activateOrgMutation } = useActivateOrg();
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -31,15 +31,21 @@ function AccountComponent() {
 				</h4>
 				{currentUser.data.permissions.length === 0 ? (
 					<div>
-						<Button
-							onClick={() =>
-								activateOrg.mutate({
-									orgId: currentOrg.id,
-								})
-							}
-						>
-							Activate Org
-						</Button>
+						<div className="flex flex-col items-center gap-4 p-4">
+							<p className="leading-7 [&:not(:first-child)]:mt-6">
+								Activate your organization to start inviting users.
+							</p>
+							<LoadingButton
+								isLoading={isPending}
+								label="Activate Organization"
+								onClick={() =>
+									// TODO: Handle Error
+									activateOrgMutation({
+										orgId: currentOrg.id,
+									})
+								}
+							/>
+						</div>
 					</div>
 				) : (
 					<Can action="manage:org" permissions={currentUser.data.permissions}>

@@ -1,3 +1,4 @@
+import LoadingButton from "@/frontend/components/buttons/loading-button";
 import { Button } from "@/frontend/components/ui/button";
 import {
 	Dialog,
@@ -19,7 +20,6 @@ import { Input } from "@/frontend/components/ui/input";
 import { useInviteUserToOrg } from "@/frontend/hooks/orgs";
 import { inviteUserToOrgSchema } from "@/shared/validations/organization";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderIcon } from "lucide-react";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -110,13 +110,11 @@ export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 								</FormItem>
 							)}
 						/>
-						<Button type="submit">
-							{form.formState.isSubmitting ? (
-								<LoaderIcon className="animate-spin" />
-							) : (
-								"Submit"
-							)}
-						</Button>
+						<LoadingButton
+							label="Submit"
+							isLoading={form.formState.isSubmitting}
+							type="submit"
+						/>
 					</form>
 				</Form>
 			</DialogContent>
