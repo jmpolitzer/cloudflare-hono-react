@@ -1,74 +1,67 @@
-import { SubmitButton, TextInput } from "@/frontend/components/forms";
 import { Button } from "@/frontend/components/ui/button";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/frontend/components/ui/form";
+import { Input } from "@/frontend/components/ui/input";
 import { useEditOrg } from "@/frontend/hooks/orgs";
 import { editOrgSchema } from "@/shared/validations/organization";
-import { useForm } from "@tanstack/react-form";
-import { PencilIcon } from "lucide-react";
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LoaderIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import type { EditOrgSchemaType } from "@/frontend/hooks/orgs";
 import type { UserOrgs } from "@/frontend/hooks/users";
-
 interface CreateOrEditOrgProps {
 	org: NonNullable<UserOrgs>["orgs"][0];
 }
 
 export default function EditOrg({ org }: CreateOrEditOrgProps) {
-	const [isEditing, setIsEditing] = useState(false);
 	const editOrgMutation = useEditOrg(org.id);
 
 	const form = useForm<EditOrgSchemaType>({
+		resolver: zodResolver(editOrgSchema),
 		defaultValues: {
 			name: org?.name ?? "",
 		},
-		onSubmit: async ({ value }) => {
-			await editOrgMutation.mutateAsync(value);
-
-			setIsEditing(false);
-			form.reset();
-		},
-		validators: {
-			onChange: editOrgSchema,
-		},
 	});
 
+	async function onSubmit(values: EditOrgSchemaType) {
+		await editOrgMutation.mutateAsync(values);
+
+		// TODO: Handle Error
+		toast.success("Organization updated.");
+	}
+
 	return (
-		<>
-			{isEditing ? (
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-				>
-					<div>
-						<form.Field
-							name="name"
-							// biome-ignore lint/correctness/noChildrenProp: Optimize later
-							children={(field) => <TextInput field={field} label="Name" />}
-						/>
-					</div>
-					<form.Subscribe
-						selector={(state) => [state.canSubmit, state.isSubmitting]}
-						// biome-ignore lint/correctness/noChildrenProp: Optimize later
-						children={([canSubmit, isSubmitting]) => (
-							<SubmitButton isSubmitting={isSubmitting} canSubmit={canSubmit} />
-						)}
-					/>
-				</form>
-			) : (
-				<div>
-					<span>{org?.name}</span>
-					<Button
-						onClick={() => {
-							setIsEditing(true);
-						}}
-					>
-						<PencilIcon />
-					</Button>
-				</div>
-			)}
-		</>
+		<Form {...form}>
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+				<FormField
+					control={form.control}
+					name="name"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Organization Name</FormLabel>
+							<FormControl>
+								<Input {...field} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<Button type="submit">
+					{form.formState.isSubmitting ? (
+						<LoaderIcon className="animate-spin" />
+					) : (
+						"Update"
+					)}
+				</Button>
+			</form>
+		</Form>
 	);
 }

@@ -57,11 +57,11 @@ export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 
 	return (
 		<Dialog>
-			<DialogTrigger asChild>
-				<Button ref={dialogTriggerRef} variant="outline">
-					Invite User
-				</Button>
-			</DialogTrigger>
+			<div className="flex justify-end pt-4">
+				<DialogTrigger asChild>
+					<Button ref={dialogTriggerRef}>Invite User</Button>
+				</DialogTrigger>
+			</div>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle>Invite User</DialogTitle>

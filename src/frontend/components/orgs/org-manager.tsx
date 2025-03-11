@@ -11,10 +11,17 @@ interface OrgManagerProps {
 
 export default function OrgManager({ currentUserId, org }: OrgManagerProps) {
 	return (
-		<div>
-			<EditOrg org={org} />
-			<InviteUserToOrg orgId={org.id} />
-			<OrgUserTable currentUserId={currentUserId} orgId={org.id} />
+		<div className="grid auto-rows-min gap-4">
+			<div className="pt-4 pb-4">
+				<EditOrg org={org} />
+			</div>
+			<div>
+				<h4 className="scroll-m-20 border-b pb-2 font-semibold tracking-tight first:mt-0">
+					Users
+				</h4>
+				<InviteUserToOrg orgId={org.id} />
+				<OrgUserTable currentUserId={currentUserId} orgId={org.id} />
+			</div>
 		</div>
 	);
 }

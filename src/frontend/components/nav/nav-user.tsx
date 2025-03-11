@@ -68,9 +68,9 @@ export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							<DropdownMenuItem asChild>
-								<Link to="/account">
+								<Link to="/settings">
 									<BadgeCheck />
-									Account
+									Settings
 								</Link>
 							</DropdownMenuItem>
 						</DropdownMenuGroup>

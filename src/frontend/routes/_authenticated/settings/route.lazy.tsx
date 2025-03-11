@@ -5,7 +5,7 @@ import { useActivateOrg } from "@/frontend/hooks/orgs";
 import { useCurrentUser, useUserOrgs } from "@/frontend/hooks/users";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
-export const Route = createLazyFileRoute("/_authenticated/account")({
+export const Route = createLazyFileRoute("/_authenticated/settings")({
 	component: AccountComponent,
 });
 
@@ -24,25 +24,29 @@ function AccountComponent() {
 	const activateOrg = useActivateOrg();
 
 	return (
-		<div>
-			<div>My Account!</div>
-			{currentUser.data.permissions.length === 0 ? (
-				<div>
-					<Button
-						onClick={() =>
-							activateOrg.mutate({
-								orgId: currentOrg.id,
-							})
-						}
-					>
-						Activate Org
-					</Button>
-				</div>
-			) : (
-				<Can action="manage:org" permissions={currentUser.data.permissions}>
-					<OrgManager currentUserId={currentUser.data.id} org={currentOrg} />
-				</Can>
-			)}
+		<div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+			<div className="rounded-xl bg-muted/50 p-4">
+				<h4 className="scroll-m-20 border-b pb-2 font-semibold tracking-tight first:mt-0">
+					Profile
+				</h4>
+				{currentUser.data.permissions.length === 0 ? (
+					<div>
+						<Button
+							onClick={() =>
+								activateOrg.mutate({
+									orgId: currentOrg.id,
+								})
+							}
+						>
+							Activate Org
+						</Button>
+					</div>
+				) : (
+					<Can action="manage:org" permissions={currentUser.data.permissions}>
+						<OrgManager currentUserId={currentUser.data.id} org={currentOrg} />
+					</Can>
+				)}
+			</div>
 		</div>
 	);
 }
