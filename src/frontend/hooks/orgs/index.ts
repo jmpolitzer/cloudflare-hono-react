@@ -101,16 +101,18 @@ export function useRemoveUserFromOrg() {
 
 	return useMutation<
 		InferResponseType<
-			(typeof client.api.orgs)[":orgId"]["users"][":userId"]["$delete"]
+			(typeof client.api.orgs)[":orgId"]["users"][":userId"]["roles"][":roleName"]["$delete"]
 		>,
 		Error,
 		InferRequestType<
-			(typeof client.api.orgs)[":orgId"]["users"][":userId"]["$delete"]
+			(typeof client.api.orgs)[":orgId"]["users"][":userId"]["roles"][":roleName"]["$delete"]
 		>["param"]
 	>({
-		mutationFn: async ({ orgId, userId }) => {
-			const res = await client.api.orgs[":orgId"].users[":userId"].$delete({
-				param: { orgId, userId },
+		mutationFn: async ({ orgId, roleName, userId }) => {
+			const res = await client.api.orgs[":orgId"].users[":userId"].roles[
+				":roleName"
+			].$delete({
+				param: { orgId, roleName, userId },
 			});
 
 			return res.json();

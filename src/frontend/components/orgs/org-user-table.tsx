@@ -63,6 +63,7 @@ const columns = [
 				<OrgUserActionsMenu
 					currentUserId={user.currentUserId}
 					orgId={user.orgId}
+					role={row.original.role}
 					userId={user.id}
 				/>
 			);

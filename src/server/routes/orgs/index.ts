@@ -16,7 +16,7 @@ import {
 	updateOrgUserRolesSchema,
 } from "@/shared/validations/organization";
 import { zValidator } from "@hono/zod-validator";
-import { Organizations, Users } from "@kinde/management-api-js";
+import { Organizations, Search, Users } from "@kinde/management-api-js";
 import { Hono } from "hono";
 
 // Create Hono app resource group with Cloudflare bindings
@@ -178,42 +178,77 @@ export const orgs = app
 			const formData = c.req.valid("form");
 
 			try {
-				const user = await Users.createUser({
-					requestBody: {
-						organization_code: orgId,
-						profile: {
-							given_name: formData.firstName,
-							family_name: formData.lastName,
-						},
-						identities: [
-							{
-								type: "email",
-								details: {
-									email: formData.email,
+				/* Check to see if user already exists. Users can belong to multiple orgs. */
+				const existingUser = await Search.searchUsers({
+					query: formData.email,
+				});
+
+				if (
+					existingUser.results?.[0] &&
+					existingUser.results[0].email === formData.email
+				) {
+					/* Add existing user back to org with basic role. */
+
+					// TODO: throw error
+					if (!existingUser.results[0].id) {
+						return c.json(
+							{ message: "Something went wrong", success: false },
+							500,
+						);
+					}
+
+					await Organizations.addOrganizationUsers({
+						orgCode: orgId,
+						requestBody: {
+							users: [
+								{
+									id: existingUser.results[0].id,
+									roles: ["basic"],
 								},
+							],
+						},
+					});
+				} else {
+					/* Create new user */
+					const newUser = await Users.createUser({
+						requestBody: {
+							organization_code: orgId,
+							profile: {
+								given_name: formData.firstName,
+								family_name: formData.lastName,
 							},
-						],
-					},
-				});
+							identities: [
+								{
+									type: "email",
+									details: {
+										email: formData.email,
+									},
+								},
+							],
+						},
+					});
 
-				const basicRole = (c.var.roles || []).find(
-					(role) => role.name === "basic",
-				);
-
-				if (!user.id || !basicRole) {
-					return c.json(
-						{ message: "Something went wrong", success: false },
-						500,
+					const basicRole = (c.var.roles || []).find(
+						(role) => role.name === "basic",
 					);
-				}
 
-				await Organizations.createOrganizationUserRole({
-					orgCode: orgId,
-					userId: user.id,
-					requestBody: {
-						role_id: basicRole.id,
-					},
-				});
+					// TODO: throw error
+					if (!newUser.id || !basicRole || !basicRole.id) {
+						return c.json(
+							{ message: "Something went wrong", success: false },
+							500,
+						);
+					}
+
+					/* Create default "basic" role */
+					await Organizations.createOrganizationUserRole({
+						orgCode: orgId,
+						userId: newUser.id,
+						requestBody: {
+							role_id: basicRole.id,
+						},
+					});
+				}
 
 				/* Send email invitation to new org user. */
 				const orgLink = `${c.env.BASE_URL}/api/auth/login?org_code=${orgId}`;
@@ -241,10 +276,24 @@ export const orgs = app
 		},
 	)
 	/* Remove User from Organization */
-	.delete("/:orgId/users/:userId", async (c) => {
-		const { orgId, userId } = c.req.param();
+	.delete("/:orgId/users/:userId/roles/:roleName", async (c) => {
+		const { orgId, roleName, userId } = c.req.param();
+		const roles = c.var.roles || [];
+		const roleId = roles.find((role) => role.name === roleName)?.id;
+
+		if (!roleId) {
+			return c.json({ message: "Something went wrong", success: false }, 500);
+		}
 
 		try {
+			/* Remove User Org Role*/
+			await Organizations.deleteOrganizationUserRole({
+				orgCode: orgId,
+				userId,
+				roleId,
+			});
+
+			/* Remove User */
 			await Organizations.removeOrganizationUser({
 				orgCode: orgId,
 				userId,

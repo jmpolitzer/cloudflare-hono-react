@@ -8,15 +8,19 @@ import {
 import { useRemoveUserFromOrg } from "@/frontend/hooks/orgs";
 import { MoreHorizontal } from "lucide-react";
 
+import type { UpdateOrgUserRoleSchemaType } from "@/frontend/hooks/orgs";
+
 interface OrgUserActionsMenuProps {
 	currentUserId: string;
 	orgId: string;
+	role: UpdateOrgUserRoleSchemaType["currentRoleId"];
 	userId: string;
 }
 
 export default function OrgUserActionsMenu({
 	currentUserId,
 	orgId,
+	role,
 	userId,
 }: OrgUserActionsMenuProps) {
 	const removeUserFromOrgMutation = useRemoveUserFromOrg();
@@ -35,6 +39,7 @@ export default function OrgUserActionsMenu({
 					onClick={() =>
 						removeUserFromOrgMutation.mutate({
 							orgId,
+							roleName: role,
 							userId,
 						})
 					}
