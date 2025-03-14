@@ -52,9 +52,12 @@ export const getKindeClient: MiddlewareHandler<{
 	Bindings: KindeBindings;
 	Variables: Variables;
 }> = async (c, next) => {
-	const kindeClient = initKindeClient(c.env);
+	if (!c.var.kindeClient) {
+		const kindeClient = initKindeClient(c.env);
 
-	c.set("kindeClient", kindeClient);
+		c.set("kindeClient", kindeClient);
+	}
+
 	await next();
 };
 
@@ -71,7 +74,7 @@ export const initKindeApi: MiddlewareHandler<{
 	await next();
 };
 
-export const getUser: MiddlewareHandler<{
+export const ensureUser: MiddlewareHandler<{
 	Variables: Variables;
 }> = async (c, next) => {
 	try {

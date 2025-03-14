@@ -9,9 +9,9 @@ import {
 	zodBadRequestException,
 } from "@/server/utils/errors";
 import {
+	ensureUser,
 	getKindeClient,
 	getRoles,
-	getUser,
 	initKindeApi,
 	refreshUser,
 	sessionManager,
@@ -30,7 +30,7 @@ const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 export const orgs = app
 	.use(getKindeClient)
-	.use(getUser)
+	.use(ensureUser)
 	.use(initKindeApi) // Inits the Kinde management API (Organizations, Users, etc.)
 	.use(getRoles)
 	.use(initResendEmailer) // Inits the Resend emailer

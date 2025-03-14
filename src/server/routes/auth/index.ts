@@ -1,5 +1,9 @@
 import { unknownRequestException } from "@/server/utils/errors";
-import { getKindeClient, getUser, sessionManager } from "@/server/utils/kinde";
+import {
+	ensureUser,
+	getKindeClient,
+	sessionManager,
+} from "@/server/utils/kinde";
 import { DEFAULT_ORG_NAME } from "@/shared/constants";
 import { Hono } from "hono";
 
@@ -56,7 +60,7 @@ export const auth = app
 			throw unknownRequestException(error);
 		}
 	})
-	.get("/me", getUser, async (c) => {
+	.get("/me", ensureUser, async (c) => {
 		const user = c.var.user;
 
 		return c.json(user);
