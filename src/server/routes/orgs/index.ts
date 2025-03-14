@@ -3,6 +3,12 @@ import {
 	sendInviteUserToOrgEmail,
 } from "@/server/utils/email/resend";
 import {
+	badRequestException,
+	internalServerErrorRequestException,
+	unknownRequestException,
+	zodBadRequestException,
+} from "@/server/utils/errors";
+import {
 	getKindeClient,
 	getRoles,
 	getUser,
@@ -33,13 +39,7 @@ export const orgs = app
 		"/:orgId",
 		zValidator("form", editOrgSchema, (result, c) => {
 			if (!result.success) {
-				return c.json(
-					{
-						success: false,
-						error: result.error,
-					},
-					400,
-				);
+				throw zodBadRequestException(result.error);
 			}
 		}),
 		async (c) => {
@@ -64,13 +64,7 @@ export const orgs = app
 					success: true,
 				});
 			} catch (error) {
-				return c.json(
-					{
-						success: false,
-						error,
-					},
-					400,
-				);
+				throw unknownRequestException(error);
 			}
 		},
 	)
@@ -88,13 +82,7 @@ export const orgs = app
 				users: orgUsers,
 			});
 		} catch (error) {
-			return c.json(
-				{
-					success: false,
-					error,
-				},
-				400,
-			);
+			throw unknownRequestException(error);
 		}
 	})
 	/* Create admin role for org owner. This allows for user invitations. */
@@ -108,7 +96,7 @@ export const orgs = app
 
 			// Fail if org has more than one user. The owner must be the only user.
 			if ((orgUsers.organization_users || []).length > 1) {
-				return c.json({ message: "Unauthorized", success: false }, 401);
+				throw badRequestException();
 			}
 
 			const foundOrgUser = (orgUsers.organization_users || []).find(
@@ -117,7 +105,7 @@ export const orgs = app
 
 			// Fail if user is not in the org.
 			if (!foundOrgUser) {
-				return c.json({ message: "Unauthorized", success: false }, 401);
+				throw badRequestException();
 			}
 
 			const userRoles = await Organizations.getOrganizationUserRoles({
@@ -127,7 +115,7 @@ export const orgs = app
 
 			// Fail if user already has a role.
 			if ((userRoles.roles || []).length > 0) {
-				return c.json({ message: "Unauthorized", success: false }, 401);
+				throw badRequestException();
 			}
 
 			await Organizations.createOrganizationUserRole({
@@ -150,13 +138,7 @@ export const orgs = app
 				success: true,
 			});
 		} catch (error) {
-			return c.json(
-				{
-					success: false,
-					error,
-				},
-				400,
-			);
+			throw unknownRequestException(error);
 		}
 	})
 	/* Invite User to Organization */
@@ -164,13 +146,7 @@ export const orgs = app
 		"/:orgId/invite",
 		zValidator("form", inviteUserToOrgSchema, (result, c) => {
 			if (!result.success) {
-				return c.json(
-					{
-						success: false,
-						error: result.error,
-					},
-					400,
-				);
+				throw zodBadRequestException(result.error);
 			}
 		}),
 		async (c) => {
@@ -191,10 +167,7 @@ export const orgs = app
 
 					// TODO: throw error
 					if (!existingUser.results[0].id) {
-						return c.json(
-							{ message: "Something went wrong", success: false },
-							500,
-						);
+						throw internalServerErrorRequestException();
 					}
 
 					await Organizations.addOrganizationUsers({
@@ -234,10 +207,7 @@ export const orgs = app
 
 					// TODO: throw error
 					if (!newUser.id || !basicRole || !basicRole.id) {
-						return c.json(
-							{ message: "Something went wrong", success: false },
-							500,
-						);
+						throw internalServerErrorRequestException();
 					}
 
 					/* Create default "basic" role */
@@ -265,13 +235,7 @@ export const orgs = app
 					success: true,
 				});
 			} catch (error) {
-				return c.json(
-					{
-						success: false,
-						error,
-					},
-					400,
-				);
+				throw unknownRequestException(error);
 			}
 		},
 	)
@@ -282,7 +246,7 @@ export const orgs = app
 		const roleId = roles.find((role) => role.name === roleName)?.id;
 
 		if (!roleId) {
-			return c.json({ message: "Something went wrong", success: false }, 500);
+			throw internalServerErrorRequestException();
 		}
 
 		try {
@@ -303,13 +267,7 @@ export const orgs = app
 				success: true,
 			});
 		} catch (error) {
-			return c.json(
-				{
-					success: false,
-					error,
-				},
-				400,
-			);
+			throw unknownRequestException(error);
 		}
 	})
 	/* Update user role - a user can only have one role */
@@ -317,13 +275,7 @@ export const orgs = app
 		"/:orgId/users/:userId/roles",
 		zValidator("form", updateOrgUserRolesSchema, (result, c) => {
 			if (!result.success) {
-				return c.json(
-					{
-						success: false,
-						error: result.error,
-					},
-					400,
-				);
+				throw zodBadRequestException(result.error);
 			}
 		}),
 		async (c) => {
@@ -336,7 +288,7 @@ export const orgs = app
 			const newRole = roles.find((role) => role.name === formData.newRoleId);
 
 			if (!oldRole || !oldRole.id || !newRole || !newRole.id) {
-				return c.json({ message: "Something went wrong", success: false }, 500);
+				throw internalServerErrorRequestException();
 			}
 
 			// Add new role
@@ -360,13 +312,7 @@ export const orgs = app
 					success: true,
 				});
 			} catch (error) {
-				return c.json(
-					{
-						success: false,
-						error,
-					},
-					400,
-				);
+				throw unknownRequestException(error);
 			}
 		},
 	);

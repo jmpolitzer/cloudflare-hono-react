@@ -3,11 +3,13 @@ import { notes } from "@/server/routes/notes";
 import { orgs } from "@/server/routes/orgs";
 import { topics } from "@/server/routes/topics";
 import { users } from "@/server/routes/users";
+import { errorHandler } from "@/server/utils/errors";
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
 
 // Set base path and add resource route groups
 const app = new Hono()
+	.onError(errorHandler)
 	.basePath("/api")
 	.route("/notes", notes)
 	.route("/topics", topics)

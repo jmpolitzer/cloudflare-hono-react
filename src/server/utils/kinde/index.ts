@@ -13,6 +13,10 @@ import type { SessionManager, UserType } from "@kinde-oss/kinde-typescript-sdk";
 import type { get_roles_response } from "@kinde/management-api-js";
 import type { Context, MiddlewareHandler } from "hono";
 import type { CookieOptions } from "hono/utils/cookie";
+import {
+	unauthorizedRequestException,
+	unknownRequestException,
+} from "../errors";
 
 interface Variables {
 	kindeClient: ReturnType<typeof initKindeClient>;
@@ -75,7 +79,7 @@ export const getUser: MiddlewareHandler<{
 		const isAuthenticated = await c.var.kindeClient.isAuthenticated(manager);
 
 		if (!isAuthenticated) {
-			return c.json({ message: "Unauthorized" }, 401);
+			throw unauthorizedRequestException();
 		}
 
 		// While checking if a user is authenticated, we can also check if the user is already stored in the context.
@@ -93,7 +97,7 @@ export const getUser: MiddlewareHandler<{
 
 		await next();
 	} catch (e) {
-		return c.json({ message: "Unauthorized" }, 401);
+		throw unauthorizedRequestException();
 	}
 };
 
@@ -106,16 +110,20 @@ export const refreshUser = async ({
 	manager: SessionManager;
 	userId: string;
 }) => {
-	/*
-    User orgs are retrieved from the user's claims. To update the org name in the
-    user's claims, we need to refresh the user's claims.
-  */
-	await Users.refreshUserClaims({
-		userId,
-	});
+	try {
+		/*
+			User orgs are retrieved from the user's claims. To update the org name in the
+			user's claims, we need to refresh the user's claims.
+		*/
+		await Users.refreshUserClaims({
+			userId,
+		});
 
-	/* Refresh the user's tokens to ensure that the user's claims are up-to-date */
-	await kindeClient.refreshTokens(manager);
+		/* Refresh the user's tokens to ensure that the user's claims are up-to-date */
+		await kindeClient.refreshTokens(manager);
+	} catch (error) {
+		throw unknownRequestException(error);
+	}
 };
 
 export const getRoles: MiddlewareHandler<{
@@ -129,8 +137,8 @@ export const getRoles: MiddlewareHandler<{
 		}
 
 		await next();
-	} catch (e) {
-		return c.json({ message: "Something went wrong" }, 500);
+	} catch (error) {
+		throw unknownRequestException(error);
 	}
 };
 
