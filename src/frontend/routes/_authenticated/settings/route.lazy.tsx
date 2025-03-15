@@ -1,10 +1,13 @@
-import LoadingButton from "@/frontend/components/buttons/loading-button";
-import AlertError from "@/frontend/components/errors/alert-error";
-import OrgManager from "@/frontend/components/orgs/org-manager";
-import Can from "@/frontend/components/rbac/can";
-import { useActivateOrg } from "@/frontend/hooks/orgs";
+import OrganizationSection from "@/frontend/components/settings/organization";
+import ProfileSection from "@/frontend/components/settings/profile";
+import { Avatar, AvatarFallback } from "@/frontend/components/ui/avatar";
+import {
+	Card,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/frontend/components/ui/card";
 import { useCurrentUser, useUserOrgs } from "@/frontend/hooks/users";
-import { MANAGE_ORG } from "@/shared/constants";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/_authenticated/settings")({
@@ -23,44 +26,41 @@ function AccountComponent() {
 	);
 	if (!currentOrg) return null;
 
-	const {
-		isPending,
-		isError,
-		error,
-		mutate: activateOrgMutation,
-	} = useActivateOrg();
+	const fullName = `${currentUser.data.given_name} ${currentUser.data.family_name}`;
+	const getInitials = () => {
+		if (fullName) {
+			return fullName
+				.split(" ")
+				.map((name) => name[0])
+				.join("")
+				.toUpperCase();
+		}
+		return currentUser.data.email.substring(0, 2).toUpperCase();
+	};
 
 	return (
-		<div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-			<div className="rounded-xl bg-muted/50 p-4">
-				<h4 className="scroll-m-20 border-b pb-2 font-semibold tracking-tight first:mt-0">
-					Profile
-				</h4>
-				{isError && <AlertError message={error.message} />}
-				{/* Users must activate an org to use permissions. */}
-				{currentUser.data.permissions.length === 0 ? (
-					<div>
-						<div className="flex flex-col items-center gap-4 p-4">
-							<p className="leading-7 [&:not(:first-child)]:mt-6">
-								Activate your organization to start inviting users.
-							</p>
-							<LoadingButton
-								isLoading={isPending}
-								label="Activate Organization"
-								onClick={() =>
-									activateOrgMutation({
-										orgId: currentOrg.id,
-									})
-								}
-							/>
-						</div>
+		<Card className="mx-auto w-full max-w-3xl">
+			<CardHeader className="pb-3">
+				<div className="flex items-center gap-4">
+					<Avatar className="h-16 w-16">
+						{/* <AvatarImage src={avatarUrl || ""} alt={userName || userEmail} /> */}
+						<AvatarFallback className="text-lg">{getInitials()}</AvatarFallback>
+					</Avatar>
+					<div className="space-y-1">
+						<CardTitle className="text-2xl">
+							{fullName || "User Profile"}
+						</CardTitle>
+						<CardDescription>
+							Manage your account settings and preferences
+						</CardDescription>
 					</div>
-				) : (
-					<Can action={MANAGE_ORG} permissions={currentUser.data.permissions}>
-						<OrgManager currentUserId={currentUser.data.id} org={currentOrg} />
-					</Can>
-				)}
-			</div>
-		</div>
+				</div>
+			</CardHeader>
+			<ProfileSection userEmail={currentUser.data.email} />
+			<OrganizationSection
+				currentOrg={currentOrg}
+				currentUser={currentUser.data}
+			/>
+		</Card>
 	);
 }
