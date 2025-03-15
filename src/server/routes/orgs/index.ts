@@ -5,10 +5,13 @@ import {
 import {
 	badRequestException,
 	internalServerErrorRequestException,
+	unauthorizedRequestException,
 	unknownRequestException,
 	zodBadRequestException,
 } from "@/server/utils/errors";
 import {
+	ensureOrgAdmin,
+	ensureOrgAssociation,
 	ensureUser,
 	getKindeClient,
 	getRoles,
@@ -37,6 +40,8 @@ export const orgs = app
 	/* Edit Organization */
 	.patch(
 		"/:orgId",
+		ensureOrgAssociation,
+		ensureOrgAdmin,
 		zValidator("form", editOrgSchema, (result, c) => {
 			if (!result.success) {
 				throw zodBadRequestException(result.error);
@@ -45,6 +50,10 @@ export const orgs = app
 		async (c) => {
 			const { orgId } = c.req.param();
 			const formData = c.req.valid("form");
+
+			if (orgId !== c.var.user.current_org) {
+				throw unauthorizedRequestException();
+			}
 
 			try {
 				await Organizations.updateOrganization({
@@ -69,7 +78,7 @@ export const orgs = app
 		},
 	)
 	/* Get Organization Users */
-	.get("/:orgId/users", async (c) => {
+	.get("/:orgId/users", ensureOrgAssociation, ensureOrgAdmin, async (c) => {
 		const { orgId } = c.req.param();
 
 		try {
@@ -86,7 +95,7 @@ export const orgs = app
 		}
 	})
 	/* Create admin role for org owner. This allows for user invitations. */
-	.post("/:orgId/activate", async (c) => {
+	.post("/:orgId/activate", ensureOrgAssociation, async (c) => {
 		const { orgId } = c.req.param();
 
 		try {
@@ -144,6 +153,8 @@ export const orgs = app
 	/* Invite User to Organization */
 	.post(
 		"/:orgId/invite",
+		ensureOrgAssociation,
+		ensureOrgAdmin,
 		zValidator("form", inviteUserToOrgSchema, (result, c) => {
 			if (!result.success) {
 				throw zodBadRequestException(result.error);
@@ -240,39 +251,46 @@ export const orgs = app
 		},
 	)
 	/* Remove User from Organization */
-	.delete("/:orgId/users/:userId/roles/:roleName", async (c) => {
-		const { orgId, roleName, userId } = c.req.param();
-		const roles = c.var.roles || [];
-		const roleId = roles.find((role) => role.name === roleName)?.id;
+	.delete(
+		"/:orgId/users/:userId/roles/:roleName",
+		ensureOrgAssociation,
+		ensureOrgAdmin,
+		async (c) => {
+			const { orgId, roleName, userId } = c.req.param();
+			const roles = c.var.roles || [];
+			const roleId = roles.find((role) => role.name === roleName)?.id;
 
-		if (!roleId) {
-			throw internalServerErrorRequestException();
-		}
+			if (!roleId) {
+				throw internalServerErrorRequestException();
+			}
 
-		try {
-			/* Remove User Org Role*/
-			await Organizations.deleteOrganizationUserRole({
-				orgCode: orgId,
-				userId,
-				roleId,
-			});
+			try {
+				/* Remove User Org Role*/
+				await Organizations.deleteOrganizationUserRole({
+					orgCode: orgId,
+					userId,
+					roleId,
+				});
 
-			/* Remove User */
-			await Organizations.removeOrganizationUser({
-				orgCode: orgId,
-				userId,
-			});
+				/* Remove User */
+				await Organizations.removeOrganizationUser({
+					orgCode: orgId,
+					userId,
+				});
 
-			return c.json({
-				success: true,
-			});
-		} catch (error) {
-			throw unknownRequestException(error);
-		}
-	})
+				return c.json({
+					success: true,
+				});
+			} catch (error) {
+				throw unknownRequestException(error);
+			}
+		},
+	)
 	/* Update user role - a user can only have one role */
 	.patch(
 		"/:orgId/users/:userId/roles",
+		ensureOrgAssociation,
+		ensureOrgAdmin,
 		zValidator("form", updateOrgUserRolesSchema, (result, c) => {
 			if (!result.success) {
 				throw zodBadRequestException(result.error);

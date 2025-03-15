@@ -3,6 +3,7 @@ import OrgManager from "@/frontend/components/orgs/org-manager";
 import Can from "@/frontend/components/rbac/can";
 import { useActivateOrg } from "@/frontend/hooks/orgs";
 import { useCurrentUser, useUserOrgs } from "@/frontend/hooks/users";
+import { MANAGE_ORG } from "@/shared/constants";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/_authenticated/settings")({
@@ -48,7 +49,7 @@ function AccountComponent() {
 						</div>
 					</div>
 				) : (
-					<Can action="manage:org" permissions={currentUser.data.permissions}>
+					<Can action={MANAGE_ORG} permissions={currentUser.data.permissions}>
 						<OrgManager currentUserId={currentUser.data.id} org={currentOrg} />
 					</Can>
 				)}

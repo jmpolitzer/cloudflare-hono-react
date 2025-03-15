@@ -9,14 +9,16 @@ import {
 } from "@kinde/management-api-js";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 
+import {
+	forbiddenRequestException,
+	unauthorizedRequestException,
+	unknownRequestException,
+} from "@/server/utils/errors";
+import { MANAGE_ORG } from "@/shared/constants";
 import type { SessionManager, UserType } from "@kinde-oss/kinde-typescript-sdk";
 import type { get_roles_response } from "@kinde/management-api-js";
 import type { Context, MiddlewareHandler } from "hono";
 import type { CookieOptions } from "hono/utils/cookie";
-import {
-	unauthorizedRequestException,
-	unknownRequestException,
-} from "../errors";
 
 interface Variables {
 	kindeClient: ReturnType<typeof initKindeClient>;
@@ -99,8 +101,48 @@ export const ensureUser: MiddlewareHandler<{
 		}
 
 		await next();
-	} catch (e) {
+	} catch (error) {
+		throw unknownRequestException(error);
+	}
+};
+
+export const ensureOrgAssociation: MiddlewareHandler<{
+	Variables: Variables;
+}> = async (c, next) => {
+	const orgId = c.req.param("orgId");
+
+	if (orgId !== c.var.user.current_org) {
 		throw unauthorizedRequestException();
+	}
+
+	await next();
+};
+
+export const ensureOrgAdmin: MiddlewareHandler<{
+	Variables: Variables;
+}> = async (c, next) => {
+	const user = c.var.user;
+
+	if (!user.permissions.includes(MANAGE_ORG)) {
+		throw forbiddenRequestException();
+	}
+
+	await next();
+};
+
+export const getRoles: MiddlewareHandler<{
+	Variables: Variables;
+}> = async (c, next) => {
+	try {
+		if (!c.var.roles) {
+			const orgRoles = await Roles.getRoles();
+
+			c.set("roles", orgRoles.roles || []);
+		}
+
+		await next();
+	} catch (error) {
+		throw unknownRequestException(error);
 	}
 };
 
@@ -124,22 +166,6 @@ export const refreshUser = async ({
 
 		/* Refresh the user's tokens to ensure that the user's claims are up-to-date */
 		await kindeClient.refreshTokens(manager);
-	} catch (error) {
-		throw unknownRequestException(error);
-	}
-};
-
-export const getRoles: MiddlewareHandler<{
-	Variables: Variables;
-}> = async (c, next) => {
-	try {
-		if (!c.var.roles) {
-			const orgRoles = await Roles.getRoles();
-
-			c.set("roles", orgRoles.roles || []);
-		}
-
-		await next();
 	} catch (error) {
 		throw unknownRequestException(error);
 	}

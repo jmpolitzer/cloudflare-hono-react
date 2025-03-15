@@ -15,6 +15,9 @@ export const zodBadRequestException = (error: z.ZodError) =>
 export const unauthorizedRequestException = (message?: string) =>
 	new HTTPException(401, { message });
 
+export const forbiddenRequestException = (message?: string) =>
+	new HTTPException(403, { message });
+
 export const internalServerErrorRequestException = (message?: string) =>
 	new HTTPException(500, { message });
 
