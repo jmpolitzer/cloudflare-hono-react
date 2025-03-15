@@ -9,6 +9,7 @@ import { useRemoveUserFromOrg } from "@/frontend/hooks/orgs";
 import { MoreHorizontal } from "lucide-react";
 
 import type { UpdateOrgUserRoleSchemaType } from "@/frontend/hooks/orgs";
+import { toast } from "sonner";
 
 interface OrgUserActionsMenuProps {
 	currentUserId: string;
@@ -24,6 +25,19 @@ export default function OrgUserActionsMenu({
 	userId,
 }: OrgUserActionsMenuProps) {
 	const removeUserFromOrgMutation = useRemoveUserFromOrg();
+	const handleRemoveUser = async () => {
+		try {
+			await removeUserFromOrgMutation.mutateAsync({
+				orgId,
+				roleName: role,
+				userId,
+			});
+
+			toast.success("User removed from organization.");
+		} catch (error) {
+			toast.error("Failed to remove user from organization.");
+		}
+	};
 
 	return (
 		<DropdownMenu>
@@ -36,13 +50,7 @@ export default function OrgUserActionsMenu({
 			<DropdownMenuContent align="end">
 				<DropdownMenuItem
 					disabled={userId === currentUserId}
-					onClick={() =>
-						removeUserFromOrgMutation.mutate({
-							orgId,
-							roleName: role,
-							userId,
-						})
-					}
+					onClick={handleRemoveUser}
 				>
 					Remove User
 				</DropdownMenuItem>

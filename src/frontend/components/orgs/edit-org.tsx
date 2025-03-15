@@ -1,4 +1,5 @@
 import LoadingButton from "@/frontend/components/buttons/loading-button";
+import AlertError from "@/frontend/components/errors/alert-error";
 import {
 	Form,
 	FormControl,
@@ -16,12 +17,13 @@ import { toast } from "sonner";
 
 import type { EditOrgSchemaType } from "@/frontend/hooks/orgs";
 import type { UserOrgs } from "@/frontend/hooks/users";
+
 interface CreateOrEditOrgProps {
 	org: NonNullable<UserOrgs>["orgs"][0];
 }
 
 export default function EditOrg({ org }: CreateOrEditOrgProps) {
-	const editOrgMutation = useEditOrg(org.id);
+	const { mutateAsync: editOrgMutation, error, isError } = useEditOrg(org.id);
 
 	const form = useForm<EditOrgSchemaType>({
 		resolver: zodResolver(editOrgSchema),
@@ -31,14 +33,14 @@ export default function EditOrg({ org }: CreateOrEditOrgProps) {
 	});
 
 	async function onSubmit(values: EditOrgSchemaType) {
-		await editOrgMutation.mutateAsync(values);
+		await editOrgMutation(values);
 
-		// TODO: Handle Error
 		toast.success("Organization updated.");
 	}
 
 	return (
 		<Form {...form}>
+			{isError && <AlertError className="mb-2" message={error.message} />}
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 				<FormField
 					control={form.control}

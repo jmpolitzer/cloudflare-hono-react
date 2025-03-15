@@ -1,4 +1,5 @@
 import LoadingButton from "@/frontend/components/buttons/loading-button";
+import AlertError from "@/frontend/components/errors/alert-error";
 import OrgManager from "@/frontend/components/orgs/org-manager";
 import Can from "@/frontend/components/rbac/can";
 import { useActivateOrg } from "@/frontend/hooks/orgs";
@@ -22,7 +23,12 @@ function AccountComponent() {
 	);
 	if (!currentOrg) return null;
 
-	const { isPending, mutate: activateOrgMutation } = useActivateOrg();
+	const {
+		isPending,
+		isError,
+		error,
+		mutate: activateOrgMutation,
+	} = useActivateOrg();
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -30,6 +36,7 @@ function AccountComponent() {
 				<h4 className="scroll-m-20 border-b pb-2 font-semibold tracking-tight first:mt-0">
 					Profile
 				</h4>
+				{isError && <AlertError message={error.message} />}
 				{/* Users must activate an org to use permissions. */}
 				{currentUser.data.permissions.length === 0 ? (
 					<div>
@@ -41,7 +48,6 @@ function AccountComponent() {
 								isLoading={isPending}
 								label="Activate Organization"
 								onClick={() =>
-									// TODO: Handle Error
 									activateOrgMutation({
 										orgId: currentOrg.id,
 									})

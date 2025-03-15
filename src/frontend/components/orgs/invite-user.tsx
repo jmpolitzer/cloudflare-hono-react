@@ -1,4 +1,5 @@
 import LoadingButton from "@/frontend/components/buttons/loading-button";
+import AlertError from "@/frontend/components/errors/alert-error";
 import { Button } from "@/frontend/components/ui/button";
 import {
 	Dialog,
@@ -32,7 +33,11 @@ interface InviteUserToOrgProps {
 
 export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 	const dialogTriggerRef = useRef<HTMLButtonElement | null>(null);
-	const inviteUserToOrgMutation = useInviteUserToOrg(orgId);
+	const {
+		mutateAsync: inviteUserToOrgMutation,
+		error,
+		isError,
+	} = useInviteUserToOrg(orgId);
 
 	const form = useForm<InviteUserToOrgSchemaType>({
 		resolver: zodResolver(inviteUserToOrgSchema),
@@ -44,13 +49,12 @@ export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 	});
 
 	async function onSubmit(values: InviteUserToOrgSchemaType) {
-		await inviteUserToOrgMutation.mutateAsync(values);
+		await inviteUserToOrgMutation(values);
 
 		if (dialogTriggerRef.current) {
 			dialogTriggerRef.current.click();
 		}
 
-		// TODO: Handle Error
 		toast.success(`${values.email} invited successfully.`);
 		form.reset();
 	}
@@ -70,6 +74,7 @@ export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 					</DialogDescription>
 				</DialogHeader>
 				<Form {...form}>
+					{isError && <AlertError message={error.message} />}
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 						<FormField
 							control={form.control}

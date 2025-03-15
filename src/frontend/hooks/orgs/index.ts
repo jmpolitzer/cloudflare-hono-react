@@ -27,15 +27,16 @@ export function useActivateOrg() {
 				param: { orgId },
 			});
 
-			return res.json();
+			if (!res.ok) {
+				throw new Error(res.statusText);
+			}
+
+			return await res.json();
 		},
 		onSettled: async () => {
 			return await queryClient.invalidateQueries({
 				queryKey: ["get-current-user"],
 			});
-		},
-		onError: (error: Error) => {
-			throw new Error(error.message);
 		},
 	});
 }
@@ -54,15 +55,16 @@ export function useEditOrg(orgId: string) {
 				form: orgForm,
 			});
 
-			return res.json();
+			if (!res.ok) {
+				throw new Error(res.statusText);
+			}
+
+			return await res.json();
 		},
 		onSettled: async () => {
 			return await queryClient.invalidateQueries({
 				queryKey: ["user-orgs"],
 			});
-		},
-		onError: (error: Error) => {
-			throw new Error(error.message);
 		},
 	});
 }
@@ -83,15 +85,16 @@ export function useInviteUserToOrg(orgId: string) {
 				form: invitedUserForm,
 			});
 
-			return res.json();
+			if (!res.ok) {
+				throw new Error(res.statusText);
+			}
+
+			return await res.json();
 		},
 		onSettled: async () => {
 			return await queryClient.invalidateQueries({
 				queryKey: ["org-users"],
 			});
-		},
-		onError: (error: Error) => {
-			throw new Error(error.message);
 		},
 	});
 }
@@ -115,15 +118,16 @@ export function useRemoveUserFromOrg() {
 				param: { orgId, roleName, userId },
 			});
 
-			return res.json();
+			if (!res.ok) {
+				throw new Error(res.statusText);
+			}
+
+			return await res.json();
 		},
 		onSettled: async () => {
 			return await queryClient.invalidateQueries({
 				queryKey: ["org-users"],
 			});
-		},
-		onError: (error: Error) => {
-			throw new Error(error.message);
 		},
 	});
 }
@@ -161,15 +165,16 @@ export function useUpdateOrgUserRole(orgId: string) {
 				},
 			);
 
-			return res.json();
+			if (!res.ok) {
+				throw new Error(res.statusText);
+			}
+
+			return await res.json();
 		},
 		onSettled: async () => {
 			return await queryClient.invalidateQueries({
 				queryKey: ["org-users"],
 			});
-		},
-		onError: (error: Error) => {
-			throw new Error(error.message);
 		},
 	});
 }

@@ -18,6 +18,9 @@ export const unauthorizedRequestException = (message?: string) =>
 export const forbiddenRequestException = (message?: string) =>
 	new HTTPException(403, { message });
 
+export const notFoundRequestException = (message?: string) =>
+	new HTTPException(404, { message });
+
 export const internalServerErrorRequestException = (message?: string) =>
 	new HTTPException(500, { message });
 
