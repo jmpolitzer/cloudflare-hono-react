@@ -26,6 +26,7 @@ Create Two Kinde Applications:
     - manage:basic_resources
   - basic
   - Can component
+  - ensureUser, ensureOrgAssociation, ensureOrgAdmin
 
 2. M2M for Management API
 

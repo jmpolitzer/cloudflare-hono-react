@@ -28,15 +28,17 @@ import { zValidator } from "@hono/zod-validator";
 import { Organizations, Search, Users } from "@kinde/management-api-js";
 import { Hono } from "hono";
 
-// Create Hono app resource group with Cloudflare bindings
+/* Create Hono app resource group with Cloudflare bindings */
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 export const orgs = app
 	.use(getKindeClient)
 	.use(ensureUser)
-	.use(initKindeApi) // Inits the Kinde management API (Organizations, Users, etc.)
+	/* Inits the Kinde management API (Organizations, Users, etc.) */
+	.use(initKindeApi)
 	.use(getRoles)
-	.use(initResendEmailer) // Inits the Resend emailer
+	/* Inits the Resend emailer */
+	.use(initResendEmailer)
 	/* Edit Organization */
 	.patch(
 		"/:orgId",
@@ -103,7 +105,7 @@ export const orgs = app
 				orgCode: orgId,
 			});
 
-			// Fail if org has more than one user. The owner must be the only user.
+			/* Fail if org has more than one user. The owner must be the only user. */
 			if ((orgUsers.organization_users || []).length > 1) {
 				throw badRequestException();
 			}
@@ -112,7 +114,7 @@ export const orgs = app
 				(user) => user.id === c.var.user.id,
 			);
 
-			// Fail if user is not in the org.
+			/* Fail if user is not in the org. */
 			if (!foundOrgUser) {
 				throw badRequestException();
 			}
@@ -122,7 +124,7 @@ export const orgs = app
 				userId: c.var.user.id,
 			});
 
-			// Fail if user already has a role.
+			/* Fail if user already has a role. */
 			if ((userRoles.roles || []).length > 0) {
 				throw badRequestException();
 			}
@@ -136,7 +138,7 @@ export const orgs = app
 				},
 			});
 
-			// Refresh user claims
+			/* Refresh user claims */
 			await refreshUser({
 				userId: c.var.user.id,
 				kindeClient: c.var.kindeClient,
@@ -176,7 +178,6 @@ export const orgs = app
 				) {
 					/* Add existing user back to org with basic role. */
 
-					// TODO: throw error
 					if (!existingUser.results[0].id) {
 						throw internalServerErrorRequestException();
 					}
@@ -216,7 +217,6 @@ export const orgs = app
 						(role) => role.name === "basic",
 					);
 
-					// TODO: throw error
 					if (!newUser.id || !basicRole || !basicRole.id) {
 						throw internalServerErrorRequestException();
 					}
@@ -309,7 +309,7 @@ export const orgs = app
 				throw internalServerErrorRequestException();
 			}
 
-			// Add new role
+			/* Add new role */
 			try {
 				await Organizations.createOrganizationUserRole({
 					orgCode: orgId,
@@ -319,7 +319,7 @@ export const orgs = app
 					},
 				});
 
-				// Remove old role
+				/* Remove old role */
 				await Organizations.deleteOrganizationUserRole({
 					orgCode: orgId,
 					userId,

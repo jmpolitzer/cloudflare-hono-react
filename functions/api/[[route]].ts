@@ -9,13 +9,13 @@ import { handle } from "hono/cloudflare-pages";
 
 // Set base path and add resource route groups
 const app = new Hono()
-	.onError(errorHandler)
 	.basePath("/api")
 	.route("/notes", notes)
 	.route("/topics", topics)
 	.route("/users", users)
 	.route("/orgs", orgs)
-	.route("/auth", auth);
+	.route("/auth", auth)
+	.onError(errorHandler);
 
 // Export app type for client (hc)
 export type AppType = typeof app;

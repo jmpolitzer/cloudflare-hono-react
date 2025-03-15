@@ -30,6 +30,7 @@ function AccountComponent() {
 				<h4 className="scroll-m-20 border-b pb-2 font-semibold tracking-tight first:mt-0">
 					Profile
 				</h4>
+				{/* Users must activate an org to use permissions. */}
 				{currentUser.data.permissions.length === 0 ? (
 					<div>
 						<div className="flex flex-col items-center gap-4 p-4">
