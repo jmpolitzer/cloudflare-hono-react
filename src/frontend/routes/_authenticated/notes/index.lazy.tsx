@@ -7,8 +7,9 @@ export const Route = createLazyFileRoute("/_authenticated/notes/")({
 });
 
 function Notes() {
-	const notesQuery = useNotes();
-
+	const { data: notesQuery } = useNotes();
+	if (!notesQuery) return null;
+	console.log(notesQuery);
 	return (
 		<div className="p-2">
 			<Button asChild>
@@ -16,7 +17,7 @@ function Notes() {
 			</Button>
 			<h1>My Notes</h1>
 			<ul>
-				{notesQuery.data?.notes.map((note) => (
+				{notesQuery.notes.map((note) => (
 					<Link to={`/notes/${note.id}`} key={note.id}>
 						<li className="font-bold text-xl underline">
 							<p>{note.title}</p>

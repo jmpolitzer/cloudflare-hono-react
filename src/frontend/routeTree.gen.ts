@@ -15,10 +15,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedSummariesRouteImport } from './routes/_authenticated/summaries/route'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes/route'
-import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories/route'
 import { Route as AuthenticatedNotesNewImport } from './routes/_authenticated/notes/new'
 import { Route as AuthenticatedNotesNoteIdImport } from './routes/_authenticated/notes/$noteId'
 
@@ -50,15 +48,6 @@ const AuthenticatedIndexRoute = AuthenticatedIndexImport.update({
   import('./routes/_authenticated/index.lazy').then((d) => d.Route),
 )
 
-const AuthenticatedSummariesRouteRoute =
-  AuthenticatedSummariesRouteImport.update({
-    id: '/summaries',
-    path: '/summaries',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any).lazy(() =>
-    import('./routes/_authenticated/summaries/route.lazy').then((d) => d.Route),
-  )
-
 const AuthenticatedSettingsRouteRoute = AuthenticatedSettingsRouteImport.update(
   {
     id: '/settings',
@@ -74,17 +63,6 @@ const AuthenticatedNotesRouteRoute = AuthenticatedNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-
-const AuthenticatedCategoriesRouteRoute =
-  AuthenticatedCategoriesRouteImport.update({
-    id: '/categories',
-    path: '/categories',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any).lazy(() =>
-    import('./routes/_authenticated/categories/route.lazy').then(
-      (d) => d.Route,
-    ),
-  )
 
 const AuthenticatedNotesIndexLazyRoute =
   AuthenticatedNotesIndexLazyImport.update({
@@ -129,13 +107,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutLazyImport
       parentRoute: typeof rootRoute
     }
-    '/_authenticated/categories': {
-      id: '/_authenticated/categories'
-      path: '/categories'
-      fullPath: '/categories'
-      preLoaderRoute: typeof AuthenticatedCategoriesRouteImport
-      parentRoute: typeof AuthenticatedImport
-    }
     '/_authenticated/notes': {
       id: '/_authenticated/notes'
       path: '/notes'
@@ -148,13 +119,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedImport
-    }
-    '/_authenticated/summaries': {
-      id: '/_authenticated/summaries'
-      path: '/summaries'
-      fullPath: '/summaries'
-      preLoaderRoute: typeof AuthenticatedSummariesRouteImport
       parentRoute: typeof AuthenticatedImport
     }
     '/_authenticated/': {
@@ -209,18 +173,14 @@ const AuthenticatedNotesRouteRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedCategoriesRouteRoute: typeof AuthenticatedCategoriesRouteRoute
   AuthenticatedNotesRouteRoute: typeof AuthenticatedNotesRouteRouteWithChildren
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRoute
-  AuthenticatedSummariesRouteRoute: typeof AuthenticatedSummariesRouteRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedCategoriesRouteRoute: AuthenticatedCategoriesRouteRoute,
   AuthenticatedNotesRouteRoute: AuthenticatedNotesRouteRouteWithChildren,
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRoute,
-  AuthenticatedSummariesRouteRoute: AuthenticatedSummariesRouteRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
@@ -231,10 +191,8 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutLazyRoute
-  '/categories': typeof AuthenticatedCategoriesRouteRoute
   '/notes': typeof AuthenticatedNotesRouteRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteRoute
-  '/summaries': typeof AuthenticatedSummariesRouteRoute
   '/': typeof AuthenticatedIndexRoute
   '/notes/$noteId': typeof AuthenticatedNotesNoteIdRoute
   '/notes/new': typeof AuthenticatedNotesNewRoute
@@ -243,9 +201,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/about': typeof AboutLazyRoute
-  '/categories': typeof AuthenticatedCategoriesRouteRoute
   '/settings': typeof AuthenticatedSettingsRouteRoute
-  '/summaries': typeof AuthenticatedSummariesRouteRoute
   '/': typeof AuthenticatedIndexRoute
   '/notes/$noteId': typeof AuthenticatedNotesNoteIdRoute
   '/notes/new': typeof AuthenticatedNotesNewRoute
@@ -256,10 +212,8 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutLazyRoute
-  '/_authenticated/categories': typeof AuthenticatedCategoriesRouteRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRouteRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteRoute
-  '/_authenticated/summaries': typeof AuthenticatedSummariesRouteRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/notes/$noteId': typeof AuthenticatedNotesNoteIdRoute
   '/_authenticated/notes/new': typeof AuthenticatedNotesNewRoute
@@ -271,32 +225,20 @@ export interface FileRouteTypes {
   fullPaths:
     | ''
     | '/about'
-    | '/categories'
     | '/notes'
     | '/settings'
-    | '/summaries'
     | '/'
     | '/notes/$noteId'
     | '/notes/new'
     | '/notes/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/about'
-    | '/categories'
-    | '/settings'
-    | '/summaries'
-    | '/'
-    | '/notes/$noteId'
-    | '/notes/new'
-    | '/notes'
+  to: '/about' | '/settings' | '/' | '/notes/$noteId' | '/notes/new' | '/notes'
   id:
     | '__root__'
     | '/_authenticated'
     | '/about'
-    | '/_authenticated/categories'
     | '/_authenticated/notes'
     | '/_authenticated/settings'
-    | '/_authenticated/summaries'
     | '/_authenticated/'
     | '/_authenticated/notes/$noteId'
     | '/_authenticated/notes/new'
@@ -331,19 +273,13 @@ export const routeTree = rootRoute
     "/_authenticated": {
       "filePath": "_authenticated.tsx",
       "children": [
-        "/_authenticated/categories",
         "/_authenticated/notes",
         "/_authenticated/settings",
-        "/_authenticated/summaries",
         "/_authenticated/"
       ]
     },
     "/about": {
       "filePath": "about.lazy.tsx"
-    },
-    "/_authenticated/categories": {
-      "filePath": "_authenticated/categories/route.tsx",
-      "parent": "/_authenticated"
     },
     "/_authenticated/notes": {
       "filePath": "_authenticated/notes/route.tsx",
@@ -356,10 +292,6 @@ export const routeTree = rootRoute
     },
     "/_authenticated/settings": {
       "filePath": "_authenticated/settings/route.tsx",
-      "parent": "/_authenticated"
-    },
-    "/_authenticated/summaries": {
-      "filePath": "_authenticated/summaries/route.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/": {

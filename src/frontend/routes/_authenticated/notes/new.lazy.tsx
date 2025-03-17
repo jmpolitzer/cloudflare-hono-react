@@ -1,5 +1,6 @@
 import { Button } from "@/frontend/components/ui/button";
 import { useCreateNote, zodNoteSchema } from "@/frontend/hooks/notes";
+import { useCurrentUser } from "@/frontend/hooks/users";
 import { useForm } from "@tanstack/react-form";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 
@@ -23,6 +24,9 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
 }
 
 function CreateNote() {
+	const { data: currentUser } = useCurrentUser();
+	if (!currentUser) return null;
+
 	const navigate = useNavigate();
 	const createNoteMutation = useCreateNote();
 
@@ -32,7 +36,11 @@ function CreateNote() {
 			description: "",
 		},
 		onSubmit: async ({ value }) => {
-			await createNoteMutation.mutateAsync(value);
+			await createNoteMutation.mutateAsync({
+				...value,
+				userId: currentUser.id,
+				orgId: currentUser.current_org as string,
+			});
 			form.reset();
 			navigate({ to: "/notes" });
 		},

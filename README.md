@@ -40,3 +40,10 @@ Create Two Kinde Applications:
 4. Constants
 
 - export const DEFAULT_ORG_NAME = "Default Org";
+
+DB:
+
+1. Studio: `bun drizzle-kit studio` 
+  - `ctrl-z to close`
+2. Create Migration: `bun drizzle-kit generate`
+3. Run Migration: `bun drizzle-kit migrate`
