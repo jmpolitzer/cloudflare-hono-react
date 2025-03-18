@@ -17,7 +17,9 @@ export function useNotes() {
 	return useQuery({
 		queryKey: ["notes"],
 		queryFn: async () => {
-			const res = await client.api.notes.$get();
+			const res = await client.api.notes.$get({
+				query: {},
+			});
 
 			return await res.json();
 		},

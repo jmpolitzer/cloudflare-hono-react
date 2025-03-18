@@ -38,8 +38,6 @@ function CreateNote() {
 		onSubmit: async ({ value }) => {
 			await createNoteMutation.mutateAsync({
 				...value,
-				userId: currentUser.id,
-				orgId: currentUser.current_org as string,
 			});
 			form.reset();
 			navigate({ to: "/notes" });
