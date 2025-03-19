@@ -1,26 +1,20 @@
-import { useNote } from "@/frontend/hooks/notes";
+import { NoteDetail } from "@/frontend/components/notes/NoteDetail";
+import { useNotes } from "@/frontend/hooks/notes";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/_authenticated/notes/$noteId")({
-	component: Note,
+	component: NotePage,
 });
 
-function Note() {
-	const noteId = Route.useParams({
-		select: (params) => params.noteId,
-	});
-	const noteQuery = useNote(noteId);
+function NotePage() {
+	const { data: notesQuery } = useNotes();
+	const { noteId } = Route.useParams();
 
-	return (
-		<div className="p-2">
-			{noteQuery.data?.note ? (
-				<div>
-					<div>
-						<p>{noteQuery.data.note.title}</p>
-						<p>{noteQuery.data.note.description}</p>
-					</div>
-				</div>
-			) : null}
-		</div>
-	);
+	const note = notesQuery?.notes.find((note) => note.id === Number(noteId));
+
+	if (!note) {
+		return <div>Note not found</div>;
+	}
+
+	return <NoteDetail note={note} />;
 }
