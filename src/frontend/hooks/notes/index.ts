@@ -79,5 +79,30 @@ export function useUpdateNote(noteId: string) {
 	});
 }
 
+export function useDeleteNote() {
+	const queryClient = useQueryClient();
+
+	return useMutation<
+		InferResponseType<(typeof client.api.notes)[":noteId"]["$delete"]>,
+		Error,
+		InferRequestType<(typeof client.api.notes)[":noteId"]["$delete"]>["param"]
+	>({
+		mutationFn: async ({ noteId }) => {
+			const res = await client.api.notes[":noteId"].$delete({
+				param: { noteId },
+			});
+
+			if (!res.ok) {
+				throw new Error("Failed to delete note");
+			}
+
+			return await res.json();
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["notes"] });
+		},
+	});
+}
+
 export type NoteFormSchemaType = z.infer<typeof noteFormSchema>;
 export type NotesType = ReturnType<typeof useNotes>["data"];

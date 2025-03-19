@@ -1,5 +1,4 @@
 import { NoteDetail } from "@/frontend/components/notes/NoteDetail";
-import { Button } from "@/frontend/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -7,8 +6,7 @@ import {
 	CardTitle,
 } from "@/frontend/components/ui/card";
 import { useNotes } from "@/frontend/hooks/notes";
-import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { Pencil } from "lucide-react";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import { NoteForm } from "./new.lazy";
 
 export const Route = createLazyFileRoute("/_authenticated/notes/$noteId")({
@@ -18,7 +16,6 @@ export const Route = createLazyFileRoute("/_authenticated/notes/$noteId")({
 function NotePage() {
 	const { data: notesQuery } = useNotes();
 	const { noteId } = Route.useParams();
-	const navigate = useNavigate();
 	const { mode } = Route.useSearch();
 	const isEditing = mode === "edit";
 
@@ -51,22 +48,6 @@ function NotePage() {
 
 	return (
 		<div className="space-y-4">
-			<div className="flex justify-end">
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() =>
-						navigate({
-							to: "/notes/$noteId",
-							params: { noteId },
-							search: { mode: "edit" },
-						})
-					}
-				>
-					<Pencil className="mr-2 h-4 w-4" />
-					Edit Note
-				</Button>
-			</div>
 			<NoteDetail note={note} />
 		</div>
 	);
