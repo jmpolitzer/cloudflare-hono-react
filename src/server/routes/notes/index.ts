@@ -142,4 +142,35 @@ export const notes = app
 		} catch (error) {
 			throw unknownRequestException(error);
 		}
+	})
+	.delete("/:noteId", async (c) => {
+		try {
+			const { noteId } = c.req.param();
+			const db = drizzle(c.env.DB, { schema });
+
+			// Check if the note exists, belongs to the user's org, and was created by the user
+			const existingNote = await db.query.notesTable.findFirst({
+				where: (note, { eq, and }) =>
+					and(
+						eq(note.id, Number(noteId)),
+						eq(note.orgId, c.var.user.current_org as string),
+						eq(note.userId, c.var.user.id as string),
+					),
+			});
+
+			if (!existingNote) {
+				throw notFoundRequestException(
+					"Note not found or you don't have permission to delete it",
+				);
+			}
+
+			// Delete the note
+			await db
+				.delete(schema.notesTable)
+				.where(eq(schema.notesTable.id, Number(noteId)));
+
+			return c.json({ success: true }, 200);
+		} catch (error) {
+			throw unknownRequestException(error);
+		}
 	});
