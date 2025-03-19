@@ -140,6 +140,10 @@ export function useOrgUsers(orgId: string) {
 				param: { orgId },
 			});
 
+			if (!res.ok) {
+				throw new Error("Failed to fetch organization users");
+			}
+
 			return await res.json();
 		},
 	});

@@ -5,9 +5,10 @@ import { ScrollArea } from "@/frontend/components/ui/scroll-area";
 import { Skeleton } from "@/frontend/components/ui/skeleton";
 import { useNotes } from "@/frontend/hooks/notes";
 import { cn } from "@/frontend/lib/utils";
-import type { Note } from "@/frontend/types";
 import { Link, createLazyFileRoute } from "@tanstack/react-router";
 import { PlusCircle } from "lucide-react";
+
+import type { NotesType } from "@/frontend/hooks/notes";
 
 export const Route = createLazyFileRoute("/_authenticated/notes/")({
 	component: Notes,
@@ -51,7 +52,7 @@ function LoadingState() {
 function NoteListItem({
 	note,
 	isSelected,
-}: { note: Note; isSelected: boolean }) {
+}: { note: NonNullable<NotesType>["notes"][0]; isSelected: boolean }) {
 	return (
 		<Link
 			to={`/notes/${note.id}`}
@@ -103,7 +104,9 @@ export default function Notes() {
 				</div>
 				<div className="col-span-3">
 					<ScrollArea className="h-full">
-						<NoteDetail note={undefined} />
+						<div className="p-8">
+							<NoteDetail note={undefined} />
+						</div>
 					</ScrollArea>
 				</div>
 			</div>

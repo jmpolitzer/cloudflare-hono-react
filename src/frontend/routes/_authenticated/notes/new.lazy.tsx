@@ -1,105 +1,131 @@
 import { Button } from "@/frontend/components/ui/button";
-import { useCreateNote, zodNoteSchema } from "@/frontend/hooks/notes";
-import { useCurrentUser } from "@/frontend/hooks/users";
-import { useForm } from "@tanstack/react-form";
-import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/frontend/components/ui/card";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/frontend/components/ui/form";
+import { Input } from "@/frontend/components/ui/input";
+import { Textarea } from "@/frontend/components/ui/textarea";
+import { useCreateNote, useUpdateNote } from "@/frontend/hooks/notes";
+import type { NoteFormSchemaType } from "@/frontend/hooks/notes";
+import { noteFormSchema } from "@/shared/validations/notes";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import { useForm } from "react-hook-form";
 
-import type { NoteSchema } from "@/frontend/hooks/notes";
-import type { FieldApi } from "@tanstack/react-form";
-
-export const Route = createLazyFileRoute("/_authenticated/notes/new")({
-	component: CreateNote,
-});
-
-// biome-ignore lint/suspicious/noExplicitAny: Generic types are inferred
-function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
-	return (
-		<>
-			{field.state.meta.isTouched && field.state.meta.errors.length ? (
-				<em>{field.state.meta.errors.join(",")}</em>
-			) : null}
-			{field.state.meta.isValidating ? "Validating..." : null}
-		</>
-	);
+interface NoteFormProps {
+	noteId?: string;
+	initialData?: {
+		title: string;
+		description?: string | null;
+	};
 }
 
-function CreateNote() {
-	const { data: currentUser } = useCurrentUser();
-	if (!currentUser) return null;
-
+function NoteForm({ noteId, initialData }: NoteFormProps) {
 	const navigate = useNavigate();
-	const createNoteMutation = useCreateNote();
+	const createNote = useCreateNote();
+	const updateNote = useUpdateNote(noteId ?? "");
 
-	const form = useForm<NoteSchema>({
+	const form = useForm<NoteFormSchemaType>({
+		resolver: zodResolver(noteFormSchema),
 		defaultValues: {
-			title: "",
-			description: "",
-		},
-		onSubmit: async ({ value }) => {
-			await createNoteMutation.mutateAsync({
-				...value,
-			});
-			form.reset();
-			navigate({ to: "/notes" });
-		},
-		validators: {
-			onChange: zodNoteSchema,
+			title: initialData?.title ?? "",
+			description: initialData?.description ?? "",
 		},
 	});
 
+	async function onSubmit(data: NoteFormSchemaType) {
+		try {
+			if (noteId) {
+				await updateNote.mutateAsync(data);
+			} else {
+				await createNote.mutateAsync(data);
+			}
+			navigate({ to: "/notes" });
+		} catch (error) {
+			console.error("Failed to save note:", error);
+		}
+	}
+
 	return (
-		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				form.handleSubmit();
-			}}
-		>
-			<div>
-				<form.Field
+		<Form {...form}>
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+				<FormField
+					control={form.control}
 					name="title"
-					// biome-ignore lint/correctness/noChildrenProp: Optimize later
-					children={(field) => (
-						<>
-							<label htmlFor={field.name}>Title:</label>
-							<input
-								id={field.name}
-								name={field.name}
-								value={field.state.value}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-							/>
-							<FieldInfo field={field} />
-						</>
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Title</FormLabel>
+							<FormControl>
+								<Input placeholder="Note title" {...field} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
 					)}
 				/>
-				<form.Field
+				<FormField
+					control={form.control}
 					name="description"
-					// biome-ignore lint/correctness/noChildrenProp: Optimize later
-					children={(field) => (
-						<>
-							<label htmlFor={field.name}>Description:</label>
-							<input
-								id={field.name}
-								name={field.name}
-								value={field.state.value}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-							/>
-							<FieldInfo field={field} />
-						</>
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Description</FormLabel>
+							<FormControl>
+								<Textarea
+									placeholder="Add your note content here..."
+									className="min-h-[200px] resize-none"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
 					)}
 				/>
-			</div>
-			<form.Subscribe
-				selector={(state) => [state.canSubmit, state.isSubmitting]}
-				// biome-ignore lint/correctness/noChildrenProp: Optimize later
-				children={([canSubmit, isSubmitting]) => (
-					<Button type="submit" disabled={!canSubmit}>
-						{isSubmitting ? "Submitting..." : "Submit"}
+				<div className="flex items-center space-x-4">
+					<Button
+						type="submit"
+						disabled={createNote.isPending || updateNote.isPending}
+					>
+						{createNote.isPending || updateNote.isPending
+							? "Saving..."
+							: noteId
+								? "Update Note"
+								: "Create Note"}
 					</Button>
-				)}
-			/>
-		</form>
+					<Button variant="outline" asChild>
+						<Link to="/notes">Cancel</Link>
+					</Button>
+				</div>
+			</form>
+		</Form>
+	);
+}
+
+export const Route = createLazyFileRoute("/_authenticated/notes/new")({
+	component: NewNote,
+});
+
+export default function NewNote() {
+	return (
+		<div className="container mx-auto py-8">
+			<Card>
+				<CardHeader>
+					<CardTitle>Create Note</CardTitle>
+					<CardDescription>Add a new note to your collection</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<NoteForm />
+				</CardContent>
+			</Card>
+		</div>
 	);
 }

@@ -1,5 +1,8 @@
 import * as schema from "@/server/db/schema";
-import { unknownRequestException } from "@/server/utils/errors";
+import {
+	notFoundRequestException,
+	unknownRequestException,
+} from "@/server/utils/errors";
 import { ensureUser, getKindeClient } from "@/server/utils/kinde";
 import { zValidator } from "@hono/zod-validator";
 import { eq, sql } from "drizzle-orm";
@@ -92,7 +95,7 @@ export const notes = app
 		}
 	})
 	.get(
-		"/:id",
+		"/:noteId",
 		zValidator("param", z.object({ id: noteIdSchema })),
 		async (c) => {
 			try {
@@ -112,6 +115,45 @@ export const notes = app
 				}
 
 				return c.json({ note });
+			} catch (error) {
+				throw unknownRequestException(error);
+			}
+		},
+	)
+	.put(
+		"/:noteId",
+		zValidator("param", z.object({ id: noteIdSchema })),
+		zValidator("form", noteFormSchema),
+		async (c) => {
+			try {
+				const { id } = c.req.valid("param");
+				const formData = c.req.valid("form");
+				const db = drizzle(c.env.DB, { schema });
+
+				// First check if the note exists and belongs to the user's org
+				const existingNote = await db.query.notesTable.findFirst({
+					where: (note, { eq, and }) =>
+						and(
+							eq(note.id, id),
+							eq(note.orgId, c.var.user.current_org as string),
+						),
+				});
+
+				if (!existingNote) {
+					throw notFoundRequestException();
+				}
+
+				// Update the note
+				const updatedNote = await db
+					.update(schema.notesTable)
+					.set({
+						title: formData.title,
+						description: formData.description,
+					})
+					.where(eq(schema.notesTable.id, id))
+					.returning();
+
+				return c.json({ note: updatedNote[0] });
 			} catch (error) {
 				throw unknownRequestException(error);
 			}

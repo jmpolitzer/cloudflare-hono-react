@@ -1,7 +1,6 @@
-import type { Note } from "@/frontend/types";
-
+import type { NotesType } from "@/frontend/hooks/notes";
 interface NoteDetailProps {
-	note: Note | undefined;
+	note: NonNullable<NotesType>["notes"][0] | undefined;
 }
 
 export function NoteDetail({ note }: NoteDetailProps) {
