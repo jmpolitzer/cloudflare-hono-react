@@ -6,15 +6,26 @@ import {
 	SidebarProvider,
 	SidebarTrigger,
 } from "@/frontend/components/ui/sidebar";
+import { useCurrentUser, useUserOrgs } from "@/frontend/hooks/users";
 
 interface LayoutProps {
 	children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
+	const user = useCurrentUser();
+	if (!user.data) return null;
+
+	const userOrgsQuery = useUserOrgs(user.data.id);
+	if (!userOrgsQuery.data) return null;
+
 	return (
 		<SidebarProvider>
-			<AppSidebar />
+			<AppSidebar
+				currentOrg={user.data.current_org}
+				orgs={userOrgsQuery.data?.orgs || []}
+				user={user.data}
+			/>
 			<SidebarInset>
 				<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
 					<div className="flex items-center gap-2 px-4">

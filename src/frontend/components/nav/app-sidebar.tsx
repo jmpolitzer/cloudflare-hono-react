@@ -1,6 +1,6 @@
-import NavHeader from "@/frontend/components/nav/nav-header";
 import NavMain from "@/frontend/components/nav/nav-main";
 import NavUser from "@/frontend/components/nav/nav-user";
+import OrgSwitcher from "@/frontend/components/nav/org-switcher";
 import {
 	Sidebar,
 	SidebarContent,
@@ -8,25 +8,25 @@ import {
 	SidebarHeader,
 	SidebarRail,
 } from "@/frontend/components/ui/sidebar";
-import { useCurrentUser } from "@/frontend/hooks/users";
+import type { CurrentUser, UserOrgs } from "@/frontend/hooks/users";
 
-export default function AppSidebar({
-	...props
-}: React.ComponentProps<typeof Sidebar>) {
-	const user = useCurrentUser();
+interface SidebarProps {
+	currentOrg: string | null;
+	orgs: NonNullable<UserOrgs>["orgs"];
+	user: NonNullable<CurrentUser>;
+}
 
-	if (!user.data) return null;
-
+export default function AppSidebar({ currentOrg, orgs, user }: SidebarProps) {
 	return (
-		<Sidebar collapsible="icon" {...props}>
+		<Sidebar collapsible="icon">
 			<SidebarHeader>
-				<NavHeader />
+				<OrgSwitcher currentOrg={currentOrg} orgs={orgs} />
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={user.data} />
+				<NavUser user={user} />
 			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
