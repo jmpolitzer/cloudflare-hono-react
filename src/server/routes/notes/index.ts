@@ -31,13 +31,6 @@ const paginationSchema = z.object({
 		.transform((val) => (val ? Number.parseInt(val, 10) : 10)),
 });
 
-// Note ID schema
-const noteIdSchema = z.string().transform((val) => {
-	const parsed = Number.parseInt(val, 10);
-	if (Number.isNaN(parsed)) throw new Error("Invalid note ID");
-	return parsed;
-});
-
 export const notes = app
 	.use(getKindeClient)
 	.use(ensureUser)
@@ -94,68 +87,59 @@ export const notes = app
 			throw unknownRequestException(error);
 		}
 	})
-	.get(
-		"/:noteId",
-		zValidator("param", z.object({ id: noteIdSchema })),
-		async (c) => {
-			try {
-				const { id } = c.req.valid("param");
-				const db = drizzle(c.env.DB, { schema });
+	.get("/:noteId", async (c) => {
+		try {
+			const { noteId } = c.req.param();
+			const db = drizzle(c.env.DB, { schema });
 
-				const note = await db.query.notesTable.findFirst({
-					where: (note, { eq, and }) =>
-						and(
-							eq(note.id, id),
-							eq(note.orgId, c.var.user.current_org as string),
-						),
-				});
+			const note = await db.query.notesTable.findFirst({
+				where: (note, { eq, and }) =>
+					and(
+						eq(note.id, Number(noteId)),
+						eq(note.orgId, c.var.user.current_org as string),
+					),
+			});
 
-				if (!note) {
-					return c.json({ error: "Note not found" }, 404);
-				}
-
-				return c.json({ note });
-			} catch (error) {
-				throw unknownRequestException(error);
+			if (!note) {
+				throw notFoundRequestException();
 			}
-		},
-	)
-	.put(
-		"/:noteId",
-		zValidator("param", z.object({ id: noteIdSchema })),
-		zValidator("form", noteFormSchema),
-		async (c) => {
-			try {
-				const { id } = c.req.valid("param");
-				const formData = c.req.valid("form");
-				const db = drizzle(c.env.DB, { schema });
 
-				// First check if the note exists and belongs to the user's org
-				const existingNote = await db.query.notesTable.findFirst({
-					where: (note, { eq, and }) =>
-						and(
-							eq(note.id, id),
-							eq(note.orgId, c.var.user.current_org as string),
-						),
-				});
+			return c.json({ note });
+		} catch (error) {
+			throw unknownRequestException(error);
+		}
+	})
+	.put("/:noteId", zValidator("form", noteFormSchema), async (c) => {
+		try {
+			const { noteId } = c.req.param();
+			const formData = c.req.valid("form");
+			const db = drizzle(c.env.DB, { schema });
 
-				if (!existingNote) {
-					throw notFoundRequestException();
-				}
+			// First check if the note exists and belongs to the user's org
+			const existingNote = await db.query.notesTable.findFirst({
+				where: (note, { eq, and }) =>
+					and(
+						eq(note.id, Number(noteId)),
+						eq(note.orgId, c.var.user.current_org as string),
+					),
+			});
 
-				// Update the note
-				const updatedNote = await db
-					.update(schema.notesTable)
-					.set({
-						title: formData.title,
-						description: formData.description,
-					})
-					.where(eq(schema.notesTable.id, id))
-					.returning();
-
-				return c.json({ note: updatedNote[0] });
-			} catch (error) {
-				throw unknownRequestException(error);
+			if (!existingNote) {
+				throw notFoundRequestException();
 			}
-		},
-	);
+
+			// Update the note
+			const updatedNote = await db
+				.update(schema.notesTable)
+				.set({
+					title: formData.title,
+					description: formData.description,
+				})
+				.where(eq(schema.notesTable.id, Number(noteId)))
+				.returning();
+
+			return c.json({ note: updatedNote[0] });
+		} catch (error) {
+			throw unknownRequestException(error);
+		}
+	});

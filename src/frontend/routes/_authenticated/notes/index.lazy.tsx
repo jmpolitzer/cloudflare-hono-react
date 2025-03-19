@@ -7,6 +7,7 @@ import { useNotes } from "@/frontend/hooks/notes";
 import { cn } from "@/frontend/lib/utils";
 import { Link, createLazyFileRoute } from "@tanstack/react-router";
 import { PlusCircle } from "lucide-react";
+import { useState } from "react";
 
 import type { NotesType } from "@/frontend/hooks/notes";
 
@@ -52,12 +53,18 @@ function LoadingState() {
 function NoteListItem({
 	note,
 	isSelected,
-}: { note: NonNullable<NotesType>["notes"][0]; isSelected: boolean }) {
+	onClick,
+}: {
+	note: NonNullable<NotesType>["notes"][0];
+	isSelected: boolean;
+	onClick: () => void;
+}) {
 	return (
-		<Link
-			to={`/notes/${note.id}`}
+		<button
+			type="button"
+			onClick={onClick}
 			className={cn(
-				"flex flex-col space-y-1 border-b p-4 hover:bg-muted/50",
+				"flex w-full flex-col space-y-1 border-b p-4 text-left hover:bg-muted/50",
 				isSelected && "bg-muted",
 			)}
 		>
@@ -67,15 +74,20 @@ function NoteListItem({
 				<span>•</span>
 				<p>{new Date(note.updatedAt).toLocaleDateString()}</p>
 			</div>
-		</Link>
+		</button>
 	);
 }
 
 export default function Notes() {
 	const { data: notesQuery, isLoading } = useNotes();
+	const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
 
 	if (isLoading) return <LoadingState />;
 	if (!notesQuery?.notes.length) return <EmptyState />;
+
+	const selectedNote = notesQuery.notes.find(
+		(note) => note.id === selectedNoteId,
+	);
 
 	return (
 		<div className="container mx-auto py-8">
@@ -98,14 +110,19 @@ export default function Notes() {
 				<div className="col-span-2 border-r">
 					<ScrollArea className="h-full">
 						{notesQuery.notes.map((note) => (
-							<NoteListItem key={note.id} note={note} isSelected={false} />
+							<NoteListItem
+								key={note.id}
+								note={note}
+								isSelected={note.id === selectedNoteId}
+								onClick={() => setSelectedNoteId(note.id)}
+							/>
 						))}
 					</ScrollArea>
 				</div>
 				<div className="col-span-3">
 					<ScrollArea className="h-full">
 						<div className="p-8">
-							<NoteDetail note={undefined} />
+							<NoteDetail note={selectedNote} showFullViewButton />
 						</div>
 					</ScrollArea>
 				</div>

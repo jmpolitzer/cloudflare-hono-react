@@ -63,7 +63,7 @@ export function useUpdateNote(noteId: string) {
 	>({
 		mutationFn: async (noteForm) => {
 			const res = await client.api.notes[":noteId"].$put({
-				param: { id: noteId },
+				param: { noteId },
 				form: noteForm,
 			});
 

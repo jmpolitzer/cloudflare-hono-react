@@ -31,10 +31,11 @@ interface NoteFormProps {
 	};
 }
 
-function NoteForm({ noteId, initialData }: NoteFormProps) {
+export function NoteForm({ noteId, initialData }: NoteFormProps) {
 	const navigate = useNavigate();
 	const createNote = useCreateNote();
 	const updateNote = useUpdateNote(noteId ?? "");
+	const navigateTo = noteId ? `/notes/${noteId}?mode=view` : "/notes";
 
 	const form = useForm<NoteFormSchemaType>({
 		resolver: zodResolver(noteFormSchema),
@@ -51,7 +52,8 @@ function NoteForm({ noteId, initialData }: NoteFormProps) {
 			} else {
 				await createNote.mutateAsync(data);
 			}
-			navigate({ to: "/notes" });
+
+			navigate({ to: navigateTo });
 		} catch (error) {
 			console.error("Failed to save note:", error);
 		}
@@ -102,7 +104,7 @@ function NoteForm({ noteId, initialData }: NoteFormProps) {
 								: "Create Note"}
 					</Button>
 					<Button variant="outline" asChild>
-						<Link to="/notes">Cancel</Link>
+						<Link to={navigateTo}>Cancel</Link>
 					</Button>
 				</div>
 			</form>
