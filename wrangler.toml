@@ -47,6 +47,11 @@ database_name = "database"
 database_id = "935a10a7-da94-4843-9c80-793746bec984"
 migrations_dir = "drizzle/migrations"
 
+[[d1_databases]]
+binding = "TEST-DB"
+database_name = "test-db"
+database_id = "local-test-db"
+
 # Bind a dispatch namespace. Use Workers for Platforms to deploy serverless functions programmatically on behalf of your customers.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#dispatch-namespace-bindings-workers-for-platforms
 # [[dispatch_namespaces]]

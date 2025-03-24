@@ -23,8 +23,7 @@ import type { CookieOptions } from "hono/utils/cookie";
 export interface Variables {
 	kindeClient: ReturnType<typeof initKindeClient>;
 	roles: get_roles_response["roles"];
-	// Snake case is used to match the API response.
-	user: UserType & { current_org: string | null } & { permissions: string[] };
+	user: UserType & { currentOrg: string | null } & { permissions: string[] };
 }
 
 export interface KindeBindings {
@@ -115,7 +114,7 @@ export const ensureUser: MiddlewareHandler<{
 
 			c.set("user", {
 				...profile,
-				current_org: currentOrg.orgCode,
+				currentOrg: currentOrg.orgCode,
 				permissions: permissions.permissions,
 			});
 		}
@@ -131,7 +130,7 @@ export const ensureOrgAssociation: MiddlewareHandler<{
 }> = async (c, next) => {
 	const orgId = c.req.param("orgId");
 
-	if (orgId !== c.var.user.current_org) {
+	if (orgId !== c.var.user.currentOrg) {
 		throw unauthorizedRequestException();
 	}
 

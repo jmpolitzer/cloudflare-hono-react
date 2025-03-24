@@ -62,7 +62,7 @@ export function createOrgsRoutes({
 				const { orgId } = c.req.param();
 				const formData = c.req.valid("form");
 
-				if (orgId !== c.var.user.current_org) {
+				if (orgId !== c.var.user.currentOrg) {
 					throw unauthorizedRequestException();
 				}
 

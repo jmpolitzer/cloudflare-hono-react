@@ -52,7 +52,7 @@ export function createNotesRoutes({
 					title: formData.title,
 					description: formData.description,
 					userId: c.var.user.id as string,
-					orgId: c.var.user.current_org as string,
+					orgId: c.var.user.currentOrg as string,
 				});
 
 				return c.json({ note: newNote }, 201);
@@ -70,12 +70,12 @@ export function createNotesRoutes({
 				const [{ count }] = await db
 					.select({ count: sql<number>`count(*)` })
 					.from(schema.notesTable)
-					.where(eq(schema.notesTable.orgId, c.var.user.current_org as string));
+					.where(eq(schema.notesTable.orgId, c.var.user.currentOrg as string));
 
 				// Get paginated notes
 				const notes = await db.query.notesTable.findMany({
 					where: (note, { eq }) =>
-						eq(note.orgId, c.var.user.current_org as string),
+						eq(note.orgId, c.var.user.currentOrg as string),
 					limit,
 					offset,
 					orderBy: (note, { desc }) => [desc(note.createdAt)],
@@ -103,7 +103,7 @@ export function createNotesRoutes({
 					where: (note, { eq, and }) =>
 						and(
 							eq(note.id, Number(noteId)),
-							eq(note.orgId, c.var.user.current_org as string),
+							eq(note.orgId, c.var.user.currentOrg as string),
 						),
 				});
 
@@ -127,7 +127,7 @@ export function createNotesRoutes({
 					where: (note, { eq, and }) =>
 						and(
 							eq(note.id, Number(noteId)),
-							eq(note.orgId, c.var.user.current_org as string),
+							eq(note.orgId, c.var.user.currentOrg as string),
 						),
 				});
 
@@ -160,7 +160,7 @@ export function createNotesRoutes({
 					where: (note, { eq, and }) =>
 						and(
 							eq(note.id, Number(noteId)),
-							eq(note.orgId, c.var.user.current_org as string),
+							eq(note.orgId, c.var.user.currentOrg as string),
 							eq(note.userId, c.var.user.id as string),
 						),
 				});

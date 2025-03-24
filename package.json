@@ -1,5 +1,6 @@
 {
 	"name": "cloudflare-hono-react",
+	"type": "module",
 	"scripts": {
 		"dev:ui": "vite",
 		"dev:server": "wrangler pages dev --live-reload",
@@ -11,7 +12,8 @@
 		"driz-mig-prod": "cross-env NODE_ENV=production drizzle-kit migrate",
 		"driz-stu-prod": "cross-env NODE_ENV=production drizzle-kit studio",
 		"lint": "biome check ./src",
-		"format": "biome check --write ./src"
+		"format": "biome check --write ./src",
+		"test:api": "bun vitest"
 	},
 	"dependencies": {
 		"@hono/zod-validator": "^0.4.2",
@@ -52,6 +54,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
+		"@cloudflare/vitest-pool-workers": "^0.8.4",
 		"@cloudflare/workers-types": "^4.20241205.0",
 		"@tanstack/router-devtools": "^1.87.9",
 		"@tanstack/router-plugin": "^1.87.11",
@@ -67,6 +70,8 @@
 		"postcss": "^8.4.49",
 		"tailwindcss": "^3.4.16",
 		"vite": "^6.0.3",
+		"vite-tsconfig-paths": "^5.1.4",
+		"vitest": "^3.0.9",
 		"wrangler": "4"
 	}
 }
