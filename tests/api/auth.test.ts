@@ -19,27 +19,39 @@ describe("Auth API Unit Tests", () => {
 		.route("/auth", auth)
 		.onError(errorHandler);
 
-	// it("should redirect to callback on /login", async () => {
-	// 	const res = await app.request(
-	// 		"/auth/login",
-	// 		{ method: "GET" },
-	// 		mockKindeBindings,
-	// 	);
-	// 	expect(res.status).toBe(302);
-	// 	expect(res.headers.get("location")).toBe(
-	// 		"http://localhost:8787/auth/callback",
-	// 	);
-	// });
+	it("should redirect to callback on /login", async () => {
+		const res = await app.request(
+			"/api/auth/login",
+			{ method: "GET" },
+			mockKindeBindings,
+		);
+		expect(res.status).toBe(302);
+		expect(res.headers.get("location")).toBe(
+			"http://localhost:8787/auth/callback",
+		);
+	});
 
-	// it("should redirect to home on /logout", async () => {
-	// 	const res = await app.request(
-	// 		"/auth/logout",
-	// 		{ method: "GET" },
-	// 		mockKindeBindings,
-	// 	);
-	// 	expect(res.status).toBe(302);
-	// 	expect(res.headers.get("location")).toBe("http://localhost:8787/");
-	// });
+	it("should redirect to callback on /register", async () => {
+		const res = await app.request(
+			"/api/auth/register",
+			{ method: "GET" },
+			mockKindeBindings,
+		);
+		expect(res.status).toBe(302);
+		expect(res.headers.get("location")).toBe(
+			"http://localhost:8787/auth/callback",
+		);
+	});
+
+	it("should redirect to home on /logout", async () => {
+		const res = await app.request(
+			"/api/auth/logout",
+			{ method: "GET" },
+			mockKindeBindings,
+		);
+		expect(res.status).toBe(302);
+		expect(res.headers.get("location")).toBe("http://localhost:8787/");
+	});
 
 	it("should return user data on /me", async () => {
 		const res = await app.request(
