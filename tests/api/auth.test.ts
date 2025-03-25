@@ -9,7 +9,7 @@ import {
 	mockKindeBindings,
 } from "../setup";
 
-describe("Auth API Unit Tests", () => {
+describe("Auth API Tests", () => {
 	const auth = createAuthRoutes({
 		getKindeClient: mockGetKindeClient,
 		ensureUser: mockEnsureUser,
@@ -19,7 +19,7 @@ describe("Auth API Unit Tests", () => {
 		.route("/auth", auth)
 		.onError(errorHandler);
 
-	it("should redirect to callback on /login", async () => {
+	it("GET /api/auth/login - should redirect to callback", async () => {
 		const res = await app.request(
 			"/api/auth/login",
 			{ method: "GET" },
@@ -31,7 +31,7 @@ describe("Auth API Unit Tests", () => {
 		);
 	});
 
-	it("should redirect to callback on /register", async () => {
+	it("GET /api/auth/register - should redirect to callback", async () => {
 		const res = await app.request(
 			"/api/auth/register",
 			{ method: "GET" },
@@ -43,7 +43,7 @@ describe("Auth API Unit Tests", () => {
 		);
 	});
 
-	it("should redirect to home on /logout", async () => {
+	it("GET /api/auth/logout - should redirect to home", async () => {
 		const res = await app.request(
 			"/api/auth/logout",
 			{ method: "GET" },
@@ -53,7 +53,7 @@ describe("Auth API Unit Tests", () => {
 		expect(res.headers.get("location")).toBe("http://localhost:8787/");
 	});
 
-	it("should return user data on /me", async () => {
+	it("GET /api/auth/me - should return user data", async () => {
 		const res = await app.request(
 			"/api/auth/me",
 			{ method: "GET" },

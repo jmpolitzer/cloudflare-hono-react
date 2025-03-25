@@ -9,6 +9,10 @@ import {
 } from "@kinde/management-api-js";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 
+import type {
+	ResendBindings,
+	ResendVariables,
+} from "@/server/utils/email/resend";
 import {
 	forbiddenRequestException,
 	unauthorizedRequestException,
@@ -16,7 +20,11 @@ import {
 } from "@/server/utils/errors";
 import { MANAGE_ORG } from "@/shared/constants";
 import type { SessionManager, UserType } from "@kinde-oss/kinde-typescript-sdk";
-import type { get_roles_response } from "@kinde/management-api-js";
+import type {
+	Organizations,
+	Search,
+	get_roles_response,
+} from "@kinde/management-api-js";
 import type { Context, MiddlewareHandler } from "hono";
 import type { CookieOptions } from "hono/utils/cookie";
 
@@ -54,6 +62,14 @@ export interface KindeRouteBindings {
 		kindeClient: ReturnType<typeof initKindeClient>;
 		manager: SessionManager;
 	}) => Promise<void>;
+	initResendEmailer?: MiddlewareHandler<{
+		Bindings: ResendBindings;
+		Variables: ResendVariables;
+	}>;
+	Organizations?: typeof Organizations;
+	Roles?: typeof Roles;
+	Search?: typeof Search;
+	Users?: typeof Users;
 }
 
 const initKindeClient = (bindings: KindeBindings) =>

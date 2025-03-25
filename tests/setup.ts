@@ -1,99 +1,26 @@
+import type {
+	ResendBindings,
+	ResendVariables,
+} from "@/server/utils/email/resend";
 import type { KindeBindings, Variables } from "@/server/utils/kinde"; // Adjust path if needed
 import type {
+	ClaimTokenType,
 	CreateOrgURLOptions,
 	FlagType,
 	GetFlagType,
 	LoginURLOptions,
-	OAuth2CodeExchangeResponse,
 	RegisterURLOptions,
 	SessionManager,
 } from "@kinde-oss/kinde-typescript-sdk";
+import type {
+	Organizations,
+	Roles,
+	Search,
+	Users,
+} from "@kinde/management-api-js";
 import type { Context, Next } from "hono";
-import { mockUser } from "./mocks";
-
-// Mock Kinde client interface matching the real kindeClient
-interface MockKindeClient {
-	login(
-		sessionManager: SessionManager,
-		options?: LoginURLOptions,
-	): Promise<URL>;
-	logout(sessionManager: SessionManager): Promise<URL>;
-	register(
-		sessionManager: SessionManager,
-		options?: RegisterURLOptions,
-	): Promise<URL>;
-	createOrg(
-		sessionManager: SessionManager,
-		options?: CreateOrgURLOptions,
-	): Promise<URL>;
-	getToken(sessionManager: SessionManager): Promise<string>;
-	refreshTokens(
-		sessionManager: SessionManager,
-	): Promise<OAuth2CodeExchangeResponse>;
-	getUser(sessionManager: SessionManager): Promise<{
-		id: string;
-		given_name: string | null;
-		family_name: string | null;
-		email: string | null;
-		picture: string | null;
-	}>;
-	isAuthenticated(sessionManager: SessionManager): Promise<boolean>;
-	getUserProfile(sessionManager: SessionManager): Promise<{
-		id: string;
-		given_name: string | null;
-		family_name: string | null;
-		email: string | null;
-		picture: string | null;
-	}>;
-	getOrganization(
-		sessionManager: SessionManager,
-	): Promise<{ orgCode: string | null }>;
-	getPermissions(
-		sessionManager: SessionManager,
-	): Promise<{ orgCode: string | null; permissions: string[] }>;
-	getUserOrganizations(
-		sessionManager: SessionManager,
-	): Promise<{ orgCodes: string[] }>;
-	handleRedirectToApp(
-		sessionManager: SessionManager,
-		callbackURL: URL,
-	): Promise<void>;
-	getClaim(
-		sessionManager: SessionManager,
-		claim: string,
-		tokenType?: string,
-	): { name: string; value: unknown };
-	getFlag: (
-		sessionManager: SessionManager,
-		code: string,
-		defaultValue?: string | number | boolean | undefined,
-		type?: keyof FlagType | undefined,
-	) => Promise<GetFlagType>;
-	getBooleanFlag(
-		sessionManager: SessionManager,
-		code: string,
-		defaultValue?: boolean,
-	): boolean;
-	getStringFlag(
-		sessionManager: SessionManager,
-		code: string,
-		defaultValue?: string,
-	): string;
-	getIntegerFlag(
-		sessionManager: SessionManager,
-		code: string,
-		defaultValue?: number,
-	): number;
-	getPermission(
-		sessionManager: SessionManager,
-		key: string,
-	): { orgCode: string | null; isGranted: boolean };
-	getClaimValue(
-		sessionManager: SessionManager,
-		claim: string,
-		tokenType?: string,
-	): string | null;
-}
+import type { Resend } from "resend";
+import { mockOrg, mockPermission, mockPermissions, mockUser } from "./mocks";
 
 // Mocked environment bindings
 export const mockKindeBindings: KindeBindings = {
@@ -131,32 +58,21 @@ const initMockKindeClient = () => ({
 	}),
 	getUser: async (sessionManager: SessionManager) => mockUser,
 	isAuthenticated: async (sessionManager: SessionManager) => true,
-	getUserProfile: async (sessionManager: SessionManager) => ({
-		id: "mock-user-id",
-		email: "mockuser@example.com",
-		given_name: "Mock",
-		family_name: "User",
-		picture: "mock-picture",
-	}),
-	getOrganization: async (sessionManager: SessionManager) => ({
-		orgCode: "mock-org",
-	}),
-	getPermissions: async (sessionManager: SessionManager) => ({
-		orgCode: "mock-org",
-		permissions: ["manage:org"],
-	}),
+	getUserProfile: async (sessionManager: SessionManager) => mockUser,
+	getOrganization: async (sessionManager: SessionManager) => mockOrg,
+	getPermissions: async (sessionManager: SessionManager) => mockPermissions,
 	getUserOrganizations: async (sessionManager: SessionManager) => ({
 		orgCodes: ["mock-org", "mock-org-1"],
 	}),
 	handleRedirectToApp: async (
 		sessionManager: SessionManager,
 		callbackURL: URL,
-	) => undefined,
+	): Promise<void> => undefined,
 	getClaim: async (
 		sessionManager: SessionManager,
 		claim: string,
-		tokenType?: string,
-	) => ({ name: "mock-claim", value: "mock-claim-value" }), // Simplified return
+		type?: ClaimTokenType,
+	) => ({ name: "mock-claim", value: "mock-claim-value" as unknown }), // Simplified return
 	getFlag: async (
 		sessionManager: SessionManager,
 		code: string,
@@ -182,15 +98,13 @@ const initMockKindeClient = () => ({
 		code: string,
 		defaultValue?: number,
 	) => defaultValue ?? 42,
-	getPermission: async (sessionManager: SessionManager, key: string) => ({
-		orgCode: "mock-org",
-		isGranted: true,
-	}),
+	getPermission: async (sessionManager: SessionManager, key: string) =>
+		mockPermission,
 	getClaimValue: async (
 		sessionManager: SessionManager,
 		claim: string,
-		tokenType?: string,
-	) => "mock-claim-value",
+		tokenType?: ClaimTokenType,
+	) => "mock-claim-value" as unknown,
 });
 
 // Mock getKindeClient middleware
@@ -270,8 +184,8 @@ export const mockGetRoles = async (
 ) => {
 	if (!c.var.roles) {
 		c.set("roles", [
-			{ key: "admin", name: "Admin" },
-			{ key: "user", name: "User" },
+			{ id: "admin-id", key: "admin", name: "Admin" },
+			{ id: "basic-id", key: "basic", name: "basic" },
 		]);
 	}
 	await next();
@@ -284,7 +198,7 @@ export const mockRefreshUser = async ({
 	manager,
 }: {
 	userId: string;
-	kindeClient: MockKindeClient;
+	kindeClient: ReturnType<typeof initMockKindeClient>;
 	manager: SessionManager;
 }) => {
 	// Simulate refreshing tokens and claims (no-op in mock)
@@ -315,7 +229,55 @@ export const mockSessionManager = (c: Context): SessionManager => {
 	};
 };
 
-// Mock Roles and Users from management API (for completeness)
+// Mock Organizations from management API
+export const mockOrganizations = {
+	updateOrganization: async ({
+		orgCode,
+		requestBody,
+	}: { orgCode: string; requestBody: { name: string } }) => {
+		return { success: true };
+	},
+	getOrganizationUsers: async ({ orgCode }: { orgCode: string }) => ({
+		organization_users: [{ id: "mock-user-id", email: "mockuser@example.com" }],
+	}),
+	getOrganizationUserRoles: async ({
+		orgCode,
+		userId,
+	}: { orgCode: string; userId: string }) => ({
+		roles: [],
+	}),
+	createOrganizationUserRole: async ({
+		orgCode,
+		userId,
+		requestBody,
+	}: { orgCode: string; userId: string; requestBody: { role_id: string } }) => {
+		return { success: true };
+	},
+	addOrganizationUsers: async ({
+		orgCode,
+		requestBody,
+	}: {
+		orgCode: string;
+		requestBody: { users: { id: string; roles: string[] }[] };
+	}) => {
+		return { success: true };
+	},
+	removeOrganizationUser: async ({
+		orgCode,
+		userId,
+	}: { orgCode: string; userId: string }) => {
+		return { success: true };
+	},
+	deleteOrganizationUserRole: async ({
+		orgCode,
+		userId,
+		roleId,
+	}: { orgCode: string; userId: string; roleId: string }) => {
+		return { success: true };
+	},
+} as unknown as typeof Organizations;
+
+// Mock Roles from management API
 export const mockRoles = {
 	getRoles: async () => ({
 		roles: [
@@ -323,8 +285,68 @@ export const mockRoles = {
 			{ key: "user", name: "User" },
 		],
 	}),
-};
+} as unknown as typeof Roles;
 
+// Mock Users from management API
 export const mockUsers = {
+	createUser: async ({ requestBody }: { requestBody: { email: string } }) => ({
+		id: "new-user-id",
+	}),
 	refreshUserClaims: async ({ userId }: { userId: string }) => undefined,
+} as unknown as typeof Users;
+
+// Mock Search API
+export const mockSearch = {
+	searchUsers: async ({ query }: { query: string }) => ({
+		results: [],
+	}),
+} as unknown as typeof Search;
+
+// Mock Resend emailer
+export const mockResendClient = {
+	emails: {
+		send: async ({
+			from = "no-reply@yourdomain.com",
+			to,
+			subject,
+			html,
+			text,
+			cc,
+			bcc,
+			replyTo,
+			headers,
+		}: {
+			from?: string;
+			to: string | string[];
+			subject: string;
+			html?: string;
+			text?: string;
+			cc?: string | string[];
+			bcc?: string | string[];
+			replyTo?: string | string[];
+			headers?: Record<string, string>;
+		}) => {
+			return {
+				data: {
+					id: `mock-email-id-${Math.random().toString(36).substring(2)}`,
+					from,
+					to: Array.isArray(to) ? to : [to],
+					created_at: new Date().toISOString(),
+				},
+				error: null,
+			};
+		},
+	},
+} as unknown as Resend;
+
+// Mock initResendEmailer
+export const mockInitResendEmailer = async (
+	c: Context<{
+		Bindings: ResendBindings;
+		Variables: ResendVariables;
+	}>,
+	next: Next,
+) => {
+	c.set("resendClient", mockResendClient);
+	await next();
 };

@@ -1,5 +1,5 @@
 import {
-	initResendEmailer,
+	initResendEmailer as defaultInitResendEmailer,
 	sendInviteUserToOrgEmail,
 } from "@/server/utils/email/resend";
 import {
@@ -26,7 +26,11 @@ import {
 	updateOrgUserRolesSchema,
 } from "@/shared/validations/organization";
 import { zValidator } from "@hono/zod-validator";
-import { Organizations, Search, Users } from "@kinde/management-api-js";
+import {
+	Organizations as defaultOrganizations,
+	Search as defaultSearch,
+	Users as defaultUsers,
+} from "@kinde/management-api-js";
 import { Hono } from "hono";
 
 export function createOrgsRoutes({
@@ -37,6 +41,10 @@ export function createOrgsRoutes({
 	getRoles = defaultGetRoles,
 	initKindeApi = defaultInitKindeApi,
 	refreshUser = defaultRefreshUser,
+	initResendEmailer = defaultInitResendEmailer,
+	Organizations = defaultOrganizations,
+	Search = defaultSearch,
+	Users = defaultUsers,
 }: KindeRouteBindings = {}) {
 	/* Create Hono app resource group with Cloudflare bindings */
 	const app = new Hono<{ Bindings: CloudflareBindings }>();
