@@ -13,10 +13,13 @@ import type {
 	SessionManager,
 } from "@kinde-oss/kinde-typescript-sdk";
 import type {
+	GetOrganizationData,
+	GetOrganizationUsersData,
 	Organizations,
 	Roles,
 	Search,
 	Users,
+	get_organization_response,
 } from "@kinde/management-api-js";
 import type { Context, Next } from "hono";
 import type { Resend } from "resend";
@@ -229,15 +232,25 @@ export const mockSessionManager = (c: Context): SessionManager => {
 	};
 };
 
+// Mock organization state
+const mockOrgState: Record<
+	string,
+	{ name?: string; [key: string]: string | number | boolean | undefined }
+> = {
+	"mock-org": { name: "Original Org" }, // Initial state
+};
+
 // Mock Organizations from management API
 export const mockOrganizations = {
 	updateOrganization: async ({
 		orgCode,
 		requestBody,
 	}: { orgCode: string; requestBody: { name: string } }) => {
+		// Update the mock state with the new data
+		mockOrgState[orgCode] = { ...mockOrgState[orgCode], ...requestBody };
 		return { success: true };
 	},
-	getOrganizationUsers: async ({ orgCode }: { orgCode: string }) => ({
+	getOrganizationUsers: async ({ orgCode }: GetOrganizationUsersData) => ({
 		organization_users: [{ id: "mock-user-id", email: "mockuser@example.com" }],
 	}),
 	getOrganizationUserRoles: async ({
@@ -274,6 +287,12 @@ export const mockOrganizations = {
 		roleId,
 	}: { orgCode: string; userId: string; roleId: string }) => {
 		return { success: true };
+	},
+	// Add a method to get the current org state (for testing)
+	getOrganization: async ({
+		code,
+	}: GetOrganizationData): Promise<get_organization_response> => {
+		return mockOrgState[code || ""];
 	},
 } as unknown as typeof Organizations;
 

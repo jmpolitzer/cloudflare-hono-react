@@ -38,15 +38,49 @@ describe("Orgs API Tests", () => {
 		.route("/orgs", orgs)
 		.onError(errorHandler);
 
+	/* Test PATCH /:orgId (Edit Organization) */
+	it("PATCH /api/orgs/:orgId - should update organization", async () => {
+		// Step 1: Get initial state (optional, for explicit verification)
+		const initialOrg = await mockOrganizations.getOrganization({
+			code: "mock-org",
+		});
+		const initialName = initialOrg.name;
+		// Step 2: Perform the PATCH request
+		const formData = new FormData();
+		formData.append("name", "Updated Org");
+
+		const response = await app.request(
+			"/api/orgs/mock-org",
+			{
+				method: "PATCH",
+				body: formData,
+			},
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		// Step 3: Verify response
+		expect(response.status).toBe(200);
+		expect(data).toEqual({ success: true });
+
+		// Step 4: Verify the data changed
+		const updatedOrg = await mockOrganizations.getOrganization({
+			code: "mock-org",
+		});
+		expect(updatedOrg.name).toBe("Updated Org");
+		expect(updatedOrg.name).not.toBe(initialName); // Ensure it changed
+	});
+
+	/* Test GET /:orgId/users (Get Organization Users) */
 	it("GET /api/orgs/:orgId/users - should return org users", async () => {
-		const res = await app.request(
+		const response = await app.request(
 			"/api/orgs/mock-org/users",
 			{ method: "GET" },
 			mockKindeBindings,
 		);
-		const data = await res.json();
+		const data = await response.json();
 
-		expect(res.status).toBe(200);
+		expect(response.status).toBe(200);
 		expect(data).toEqual({
 			success: true,
 			users: {
@@ -55,5 +89,16 @@ describe("Orgs API Tests", () => {
 				],
 			},
 		});
+	});
+
+	/* Test POST /:orgId/activate (Activate Admin Role) */
+	it("POST /api/orgs/:orgId/activate - should assign admin role", async () => {
+		const response = await app.request("/api/orgs/mock-org/activate", {
+			method: "POST",
+		});
+
+		const data = await response.json();
+		expect(response.status).toBe(200);
+		expect(data).toEqual({ success: true });
 	});
 });
