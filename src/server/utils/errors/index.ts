@@ -1,7 +1,6 @@
 import { ApiError } from "@kinde/management-api-js";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { StatusCode } from "hono/utils/http-status";
 import type { z } from "zod";
 
 export const badRequestException = (message?: string) =>
@@ -30,9 +29,8 @@ export const unknownRequestException = (error: unknown) => {
 			message: error.message,
 		});
 	}
-
 	if (error instanceof ApiError) {
-		return new HTTPException(error.status as StatusCode, {
+		return new HTTPException(500, {
 			message: error.message,
 		});
 	}

@@ -2,6 +2,10 @@ import type {
 	ResendBindings,
 	ResendVariables,
 } from "@/server/utils/email/resend";
+import {
+	forbiddenRequestException,
+	unauthorizedRequestException,
+} from "@/server/utils/errors";
 import type { KindeBindings, Variables } from "@/server/utils/kinde"; // Adjust path if needed
 import type {
 	ClaimTokenType,
@@ -23,7 +27,7 @@ import type {
 } from "@kinde/management-api-js";
 import type { Context, Next } from "hono";
 import type { Resend } from "resend";
-import { mockOrg, mockPermission, mockPermissions, mockUser } from "./mocks";
+import { mockAdminUser } from "./mocks";
 
 // Mocked environment bindings
 export const mockKindeBindings: KindeBindings = {
@@ -36,90 +40,137 @@ export const mockKindeBindings: KindeBindings = {
 	KINDE_M2M_SECRET: "mock-m2m-secret",
 };
 
+export interface MockKindeClientOptions {
+	isAuthenticated?: boolean;
+	user?: {
+		id: string;
+		email?: string | null;
+		given_name?: string | null;
+		family_name?: string | null;
+		picture?: string | null;
+		permissions?: string[]; // Add permissions for role testing
+		orgCode?: string | null; // Current org
+	};
+}
+
 // Mock Kinde client factory
-const initMockKindeClient = () => ({
-	login: async (sessionManager: SessionManager, options?: LoginURLOptions) =>
-		new URL("http://localhost:8787/auth/callback"),
-	logout: async (sessionManager: SessionManager) =>
-		new URL("http://localhost:8787/"),
-	register: async (
-		sessionManager: SessionManager,
-		options?: RegisterURLOptions,
-	) => new URL("http://localhost:8787/auth/callback"),
-	createOrg: async (
-		sessionManager: SessionManager,
-		options?: CreateOrgURLOptions,
-	) => new URL("http://localhost:8787/auth/callback"),
-	getToken: async (sessionManager: SessionManager) => "mock-access-token",
-	refreshTokens: async (sessionManager: SessionManager) => ({
-		access_token: "mock-access-token",
-		expires_in: "3600",
-		token_type: "Bearer",
-		refresh_token: "mock-refresh-token",
-		id_token: "mock-id-token",
-		scope: "openid profile email",
-	}),
-	getUser: async (sessionManager: SessionManager) => mockUser,
-	isAuthenticated: async (sessionManager: SessionManager) => true,
-	getUserProfile: async (sessionManager: SessionManager) => mockUser,
-	getOrganization: async (sessionManager: SessionManager) => mockOrg,
-	getPermissions: async (sessionManager: SessionManager) => mockPermissions,
-	getUserOrganizations: async (sessionManager: SessionManager) => ({
-		orgCodes: ["mock-org", "mock-org-1"],
-	}),
-	handleRedirectToApp: async (
-		sessionManager: SessionManager,
-		callbackURL: URL,
-	): Promise<void> => undefined,
-	getClaim: async (
-		sessionManager: SessionManager,
-		claim: string,
-		type?: ClaimTokenType,
-	) => ({ name: "mock-claim", value: "mock-claim-value" as unknown }), // Simplified return
-	getFlag: async (
-		sessionManager: SessionManager,
-		code: string,
-		defaultValue?: string | number | boolean | undefined,
-		type?: keyof FlagType | undefined,
-	) =>
-		({
-			value: defaultValue ?? "mock-flag",
-			is_default: defaultValue === undefined,
-		}) as GetFlagType,
-	getBooleanFlag: async (
-		sessionManager: SessionManager,
-		code: string,
-		defaultValue?: boolean,
-	) => defaultValue ?? true,
-	getStringFlag: async (
-		sessionManager: SessionManager,
-		code: string,
-		defaultValue?: string,
-	) => defaultValue ?? "mock-string",
-	getIntegerFlag: async (
-		sessionManager: SessionManager,
-		code: string,
-		defaultValue?: number,
-	) => defaultValue ?? 42,
-	getPermission: async (sessionManager: SessionManager, key: string) =>
-		mockPermission,
-	getClaimValue: async (
-		sessionManager: SessionManager,
-		claim: string,
-		tokenType?: ClaimTokenType,
-	) => "mock-claim-value" as unknown,
-});
+const initMockKindeClient = (options: MockKindeClientOptions = {}) => {
+	const defaults: MockKindeClientOptions = {
+		isAuthenticated: true,
+		user: mockAdminUser,
+	};
+	const config = {
+		...defaults,
+		...options,
+		user: { ...defaults.user, ...options.user },
+	};
+
+	return {
+		login: async (sessionManager: SessionManager, options?: LoginURLOptions) =>
+			new URL("http://localhost:8787/auth/callback"),
+		logout: async (sessionManager: SessionManager) =>
+			new URL("http://localhost:8787/"),
+		register: async (
+			sessionManager: SessionManager,
+			options?: RegisterURLOptions,
+		) => new URL("http://localhost:8787/auth/callback"),
+		createOrg: async (
+			sessionManager: SessionManager,
+			options?: CreateOrgURLOptions,
+		) => new URL("http://localhost:8787/auth/callback"),
+		getToken: async (sessionManager: SessionManager) => "mock-access-token",
+		refreshTokens: async (sessionManager: SessionManager) => ({
+			access_token: "mock-access-token",
+			expires_in: "3600",
+			token_type: "Bearer",
+			refresh_token: "mock-refresh-token",
+			id_token: "mock-id-token",
+			scope: "openid profile email",
+		}),
+		getUser: async (sessionManager: SessionManager) => ({
+			id: config.user?.id ?? "mock-user-id",
+			email: config.user?.email ?? "",
+			given_name: config.user?.given_name ?? "",
+			family_name: config.user?.family_name ?? "",
+			picture: config.user?.picture ?? null,
+		}),
+		isAuthenticated: async (sessionManager: SessionManager) =>
+			config.isAuthenticated ?? false,
+		getUserProfile: async (sessionManager: SessionManager) => ({
+			id: config.user?.id ?? "mock-user-id",
+			email: config.user?.email ?? "",
+			given_name: config.user?.given_name ?? "",
+			family_name: config.user?.family_name ?? "",
+			picture: config.user?.picture ?? null,
+		}),
+		getOrganization: async (sessionManager: SessionManager) => ({
+			orgCode: config.user?.orgCode ?? null,
+		}),
+		getPermissions: async (sessionManager: SessionManager) => ({
+			permissions: config.user?.permissions ?? [],
+			orgCode: config.user?.orgCode ?? null,
+		}),
+		getUserOrganizations: async (sessionManager: SessionManager) => ({
+			orgCodes: config.user?.orgCode ? [config.user.orgCode] : [],
+		}),
+		handleRedirectToApp: async (
+			sessionManager: SessionManager,
+			callbackURL: URL,
+		): Promise<void> => undefined,
+		getClaim: async (
+			sessionManager: SessionManager,
+			claim: string,
+			type?: ClaimTokenType,
+		) => ({ name: "mock-claim", value: "mock-claim-value" as unknown }), // Simplified return
+		getFlag: async (
+			sessionManager: SessionManager,
+			code: string,
+			defaultValue?: string | number | boolean | undefined,
+			type?: keyof FlagType | undefined,
+		) =>
+			({
+				value: defaultValue ?? "mock-flag",
+				is_default: defaultValue === undefined,
+			}) as GetFlagType,
+		getBooleanFlag: async (
+			sessionManager: SessionManager,
+			code: string,
+			defaultValue?: boolean,
+		) => defaultValue ?? true,
+		getStringFlag: async (
+			sessionManager: SessionManager,
+			code: string,
+			defaultValue?: string,
+		) => defaultValue ?? "mock-string",
+		getIntegerFlag: async (
+			sessionManager: SessionManager,
+			code: string,
+			defaultValue?: number,
+		) => defaultValue ?? 42,
+		getPermission: async (sessionManager: SessionManager, key: string) => ({
+			orgCode: config.user?.orgCode ?? null,
+			isGranted: config.user?.permissions?.includes(key) ?? false,
+		}),
+		getClaimValue: async (
+			sessionManager: SessionManager,
+			claim: string,
+			tokenType?: ClaimTokenType,
+		) => "mock-claim-value" as unknown,
+	};
+};
 
 // Mock getKindeClient middleware
-export const mockGetKindeClient = async (
-	c: Context<{ Bindings: KindeBindings; Variables: Variables }>,
-	next: Next,
-) => {
-	if (!c.var.kindeClient) {
-		c.set("kindeClient", initMockKindeClient());
-	}
-	await next();
-};
+export const mockGetKindeClient =
+	(options?: MockKindeClientOptions) =>
+	async (
+		c: Context<{ Bindings: KindeBindings; Variables: Variables }>,
+		next: Next,
+	) => {
+		if (!c.var.kindeClient) {
+			c.set("kindeClient", initMockKindeClient(options));
+		}
+		await next();
+	};
 
 // Mock initKindeApi middleware (simulates management API initialization)
 export const mockInitKindeApi = async (
@@ -139,7 +190,7 @@ export const mockEnsureUser = async (
 	const isAuthenticated = await c.var.kindeClient.isAuthenticated(manager);
 
 	if (!isAuthenticated) {
-		throw new Error("Unauthorized"); // Matches unauthorizedRequestException
+		throw unauthorizedRequestException();
 	}
 
 	if (!c.var.user) {
@@ -164,7 +215,7 @@ export const mockEnsureOrgAssociation = async (
 ) => {
 	const orgId = c.req.param("orgId") || "mock-org"; // Default to mock-org
 	if (orgId !== c.var.user.currentOrg) {
-		throw new Error("Unauthorized"); // Matches unauthorizedRequestException
+		throw unauthorizedRequestException();
 	}
 	await next();
 };
@@ -175,7 +226,7 @@ export const mockEnsureOrgAdmin = async (
 	next: Next,
 ) => {
 	if (!c.var.user.permissions.includes("manage:org")) {
-		throw new Error("Forbidden"); // Matches forbiddenRequestException
+		throw forbiddenRequestException();
 	}
 	await next();
 };
@@ -368,4 +419,14 @@ export const mockInitResendEmailer = async (
 ) => {
 	c.set("resendClient", mockResendClient);
 	await next();
+};
+
+export const mockForbiddenError = {
+	success: false,
+	error: { code: "Forbidden", message: "" },
+};
+
+export const mockUnauthorizedError = {
+	success: false,
+	error: { code: "Unauthorized", message: "" },
 };

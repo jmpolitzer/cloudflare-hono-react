@@ -32,7 +32,7 @@ export const mockPermission: {
 	isGranted: true,
 };
 
-export const mockCurrentUser = {
+export const mockAdminUser = {
 	...mockUser,
 	...mockCurrentOrg,
 	permissions: mockPermissions.permissions,
