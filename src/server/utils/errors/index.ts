@@ -38,8 +38,6 @@ export const unknownRequestException = (error: unknown) => {
 
 export const errorHandler = (error: Error | HTTPException, c: Context) => {
 	// TODO: Add sentry error logging
-	console.log("=== Caught Error ===");
-
 	if (error instanceof HTTPException) {
 		if (error.status === 400) {
 			return c.json(
@@ -106,8 +104,6 @@ export const errorHandler = (error: Error | HTTPException, c: Context) => {
 			);
 		}
 	}
-
-	console.log(error);
 
 	return c.json(
 		{

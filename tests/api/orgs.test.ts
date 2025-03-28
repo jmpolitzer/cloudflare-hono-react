@@ -1,8 +1,13 @@
 import { createOrgsRoutes } from "@/server/routes/orgs";
 import { errorHandler } from "@/server/utils/errors";
+import type {
+	CancelablePromise,
+	get_organizations_user_roles_response,
+} from "@kinde/management-api-js";
 import { Hono } from "hono";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	mockBadRequestError,
 	mockEnsureOrgAdmin,
 	mockEnsureOrgAssociation,
 	mockEnsureUser,
@@ -18,6 +23,7 @@ import {
 	mockSearch,
 	mockUnauthorizedError,
 	mockUsers,
+	mockZodError,
 } from "../setup";
 import type { MockKindeClientOptions } from "../setup";
 
@@ -38,11 +44,22 @@ describe("Orgs API Tests", () => {
 			Search: mockSearch,
 			Users: mockUsers,
 		});
+
 		return new Hono()
 			.basePath("/api")
 			.route("/orgs", orgs)
 			.onError(errorHandler);
 	};
+
+	beforeEach(() => {
+		// Reset state by clearing and re-initializing via mockOrganizations methods
+		vi.restoreAllMocks();
+		mockOrganizations.removeUser("mock-org", "other-user-id"); // Ensure clean slate
+		mockOrganizations.addUser("mock-org", {
+			id: "mock-user-id",
+			email: "mockuser@example.com",
+		});
+	});
 
 	/* Test PATCH /:orgId (Edit Organization) */
 	it("PATCH /api/orgs/:orgId - should update organization (authenticated admin)", async () => {
@@ -141,6 +158,28 @@ describe("Orgs API Tests", () => {
 		expect(data).toMatchObject(mockUnauthorizedError);
 	});
 
+	it("PATCH /api/orgs/:orgId - should fail with invalid form data", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				permissions: ["manage:org"],
+				orgCode: "mock-org",
+			},
+		});
+		const formData = new FormData();
+		formData.append("name", ""); // Invalid: empty name
+
+		const response = await app.request(
+			"/api/orgs/mock-org",
+			{ method: "PATCH", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+		expect(response.status).toBe(400);
+		expect(data).toMatchObject(mockZodError("Name is required"));
+	});
+
 	/* Test GET /:orgId/users (Get Organization Users) */
 	it("GET /api/orgs/:orgId/users - should return org users (authenticated admin)", async () => {
 		const app = setupApp({
@@ -220,5 +259,51 @@ describe("Orgs API Tests", () => {
 
 		expect(response.status).toBe(401);
 		expect(data).toMatchObject(mockUnauthorizedError);
+	});
+
+	it("POST /api/orgs/:orgId/activate - should fail if user already has role", async () => {
+		// Mock getOrganizationUserRoles to return a role for the user
+		mockOrganizations.getOrganizationUserRoles = vi.fn(
+			async ({ orgCode, userId }) => {
+				return { roles: [{ id: "basic-id" }] }; // Match role ID from mockRoles
+			},
+		) as unknown as (data: {
+			orgCode: string;
+			userId: string;
+		}) => CancelablePromise<get_organizations_user_roles_response>;
+
+		const app = setupApp({
+			isAuthenticated: true,
+			user: { id: "mock-user-id", orgCode: "mock-org", permissions: [] },
+		});
+		const response = await app.request(
+			"/api/orgs/mock-org/activate",
+			{ method: "POST" },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+		expect(response.status).toBe(400);
+		expect(data).toMatchObject(mockBadRequestError);
+	});
+
+	it("POST /api/orgs/:orgId/activate - should fail if org has multiple users", async () => {
+		// Add a second user to the org
+		mockOrganizations.addUser("mock-org", {
+			id: "other-user-id",
+			email: "otheruser@example.com",
+		});
+
+		const app = setupApp({
+			isAuthenticated: true,
+			user: { id: "mock-user-id", orgCode: "mock-org", permissions: [] },
+		});
+		const response = await app.request(
+			"/api/orgs/mock-org/activate",
+			{ method: "POST" },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+		expect(response.status).toBe(400);
+		expect(data).toMatchObject(mockBadRequestError);
 	});
 });

@@ -27,6 +27,7 @@ import type {
 } from "@kinde/management-api-js";
 import type { Context, Next } from "hono";
 import type { Resend } from "resend";
+import { vi } from "vitest";
 import { mockAdminUser } from "./mocks";
 
 // Mocked environment bindings
@@ -283,69 +284,92 @@ export const mockSessionManager = (c: Context): SessionManager => {
 	};
 };
 
-// Mock organization state
+// Mock organization state with users
 const mockOrgState: Record<
 	string,
-	{ name?: string; [key: string]: string | number | boolean | undefined }
+	{
+		name?: string;
+		users: { id: string; email: string }[];
+		[key: string]:
+			| string
+			| number
+			| boolean
+			| undefined
+			| { id: string; email: string }[];
+	}
 > = {
-	"mock-org": { name: "Original Org" }, // Initial state
+	"mock-org": {
+		name: "Original Org",
+		users: [{ id: "mock-user-id", email: "mockuser@example.com" }], // Initial user
+	},
 };
 
-// Mock Organizations from management API
+// Mock Organizations with dynamic state
 export const mockOrganizations = {
-	updateOrganization: async ({
-		orgCode,
-		requestBody,
-	}: { orgCode: string; requestBody: { name: string } }) => {
-		// Update the mock state with the new data
+	updateOrganization: vi.fn(async ({ orgCode, requestBody }) => {
 		mockOrgState[orgCode] = { ...mockOrgState[orgCode], ...requestBody };
 		return { success: true };
-	},
-	getOrganizationUsers: async ({ orgCode }: GetOrganizationUsersData) => ({
-		organization_users: [{ id: "mock-user-id", email: "mockuser@example.com" }],
 	}),
-	getOrganizationUserRoles: async ({
-		orgCode,
-		userId,
-	}: { orgCode: string; userId: string }) => ({
+	getOrganizationUsers: vi.fn(async ({ orgCode }: GetOrganizationUsersData) => {
+		const org = mockOrgState[orgCode] || { users: [] };
+		return { organization_users: org.users };
+	}),
+	getOrganizationUserRoles: vi.fn(async ({ orgCode, userId }) => ({
 		roles: [],
+	})),
+	createOrganizationUserRole: vi.fn(
+		async ({ orgCode, userId, requestBody }) => ({
+			success: true,
+		}),
+	),
+	addOrganizationUsers: vi.fn(async ({ orgCode, requestBody }) => {
+		const org = mockOrgState[orgCode] || { users: [] };
+		// biome-ignore lint/complexity/noForEach: <explanation>
+		requestBody.users.forEach((user: { id: string }) => {
+			if (!org.users.some((u) => u.id === user.id)) {
+				org.users.push({ id: user.id, email: `${user.id}@example.com` });
+			}
+		});
+		mockOrgState[orgCode] = org;
+		return { success: true };
 	}),
-	createOrganizationUserRole: async ({
-		orgCode,
-		userId,
-		requestBody,
-	}: { orgCode: string; userId: string; requestBody: { role_id: string } }) => {
+	removeOrganizationUser: vi.fn(async ({ orgCode, userId }) => {
+		const org = mockOrgState[orgCode];
+		if (org) {
+			org.users = org.users.filter((u) => u.id !== userId);
+			mockOrgState[orgCode] = org;
+		}
 		return { success: true };
+	}),
+	deleteOrganizationUserRole: vi.fn(async ({ orgCode, userId, roleId }) => ({
+		success: true,
+	})),
+	getOrganization: vi.fn(
+		async ({
+			code,
+		}: GetOrganizationData): Promise<get_organization_response> => {
+			return mockOrgState[code || ""] || { name: "" };
+		},
+	),
+	// Helper methods to manipulate state
+	addUser: (orgCode: string, user: { id: string; email: string }) => {
+		const org = mockOrgState[orgCode] || { name: orgCode, users: [] };
+		if (!org.users.some((u) => u.id === user.id)) {
+			org.users.push(user);
+		}
+		mockOrgState[orgCode] = org;
 	},
-	addOrganizationUsers: async ({
-		orgCode,
-		requestBody,
-	}: {
-		orgCode: string;
-		requestBody: { users: { id: string; roles: string[] }[] };
-	}) => {
-		return { success: true };
+	removeUser: (orgCode: string, userId: string) => {
+		const org = mockOrgState[orgCode];
+		if (org) {
+			org.users = org.users.filter((u) => u.id !== userId);
+			mockOrgState[orgCode] = org;
+		}
 	},
-	removeOrganizationUser: async ({
-		orgCode,
-		userId,
-	}: { orgCode: string; userId: string }) => {
-		return { success: true };
-	},
-	deleteOrganizationUserRole: async ({
-		orgCode,
-		userId,
-		roleId,
-	}: { orgCode: string; userId: string; roleId: string }) => {
-		return { success: true };
-	},
-	// Add a method to get the current org state (for testing)
-	getOrganization: async ({
-		code,
-	}: GetOrganizationData): Promise<get_organization_response> => {
-		return mockOrgState[code || ""];
-	},
-} as unknown as typeof Organizations;
+} as unknown as typeof Organizations & {
+	addUser: (orgCode: string, user: { id: string; email: string }) => void;
+	removeUser: (orgCode: string, userId: string) => void;
+};
 
 // Mock Roles from management API
 export const mockRoles = {
@@ -421,6 +445,11 @@ export const mockInitResendEmailer = async (
 	await next();
 };
 
+export const mockBadRequestError = {
+	success: false,
+	error: { code: "BadRequest", message: "" },
+};
+
 export const mockForbiddenError = {
 	success: false,
 	error: { code: "Forbidden", message: "" },
@@ -430,3 +459,8 @@ export const mockUnauthorizedError = {
 	success: false,
 	error: { code: "Unauthorized", message: "" },
 };
+
+export const mockZodError = (message: string) => ({
+	success: false,
+	error: { code: "BadRequest", message },
+});

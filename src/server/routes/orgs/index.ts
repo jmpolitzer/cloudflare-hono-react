@@ -32,6 +32,7 @@ import {
 	Users as defaultUsers,
 } from "@kinde/management-api-js";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 
 export function createOrgsRoutes({
 	ensureUser = defaultEnsureUser,
@@ -92,6 +93,10 @@ export function createOrgsRoutes({
 						success: true,
 					});
 				} catch (error) {
+					if (error instanceof HTTPException) {
+						throw error;
+					}
+
 					throw unknownRequestException(error);
 				}
 			},
@@ -110,6 +115,10 @@ export function createOrgsRoutes({
 					users: orgUsers,
 				});
 			} catch (error) {
+				if (error instanceof HTTPException) {
+					throw error;
+				}
+
 				throw unknownRequestException(error);
 			}
 		})
@@ -166,6 +175,10 @@ export function createOrgsRoutes({
 					success: true,
 				});
 			} catch (error) {
+				if (error instanceof HTTPException) {
+					throw error;
+				}
+
 				throw unknownRequestException(error);
 			}
 		})
@@ -263,6 +276,10 @@ export function createOrgsRoutes({
 						success: true,
 					});
 				} catch (error) {
+					if (error instanceof HTTPException) {
+						throw error;
+					}
+
 					throw unknownRequestException(error);
 				}
 			},
@@ -299,6 +316,10 @@ export function createOrgsRoutes({
 						success: true,
 					});
 				} catch (error) {
+					if (error instanceof HTTPException) {
+						throw error;
+					}
+
 					throw unknownRequestException(error);
 				}
 			},
@@ -347,6 +368,10 @@ export function createOrgsRoutes({
 						success: true,
 					});
 				} catch (error) {
+					if (error instanceof HTTPException) {
+						throw error;
+					}
+
 					throw unknownRequestException(error);
 				}
 			},
