@@ -12,6 +12,7 @@ import { zValidator } from "@hono/zod-validator";
 import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 
 // Create a schema for the form data (without user/org fields)
@@ -57,6 +58,10 @@ export function createNotesRoutes({
 
 				return c.json({ note: newNote }, 201);
 			} catch (error) {
+				if (error instanceof HTTPException) {
+					throw error;
+				}
+
 				throw unknownRequestException(error);
 			}
 		})
@@ -91,6 +96,10 @@ export function createNotesRoutes({
 					},
 				});
 			} catch (error) {
+				if (error instanceof HTTPException) {
+					throw error;
+				}
+
 				throw unknownRequestException(error);
 			}
 		})
@@ -113,6 +122,10 @@ export function createNotesRoutes({
 
 				return c.json({ note });
 			} catch (error) {
+				if (error instanceof HTTPException) {
+					throw error;
+				}
+
 				throw unknownRequestException(error);
 			}
 		})
@@ -147,6 +160,10 @@ export function createNotesRoutes({
 
 				return c.json({ note: updatedNote[0] });
 			} catch (error) {
+				if (error instanceof HTTPException) {
+					throw error;
+				}
+
 				throw unknownRequestException(error);
 			}
 		})
@@ -178,6 +195,10 @@ export function createNotesRoutes({
 
 				return c.json({ success: true }, 200);
 			} catch (error) {
+				if (error instanceof HTTPException) {
+					throw error;
+				}
+
 				throw unknownRequestException(error);
 			}
 		});
