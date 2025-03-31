@@ -3,6 +3,7 @@ import { errorHandler } from "@/server/utils/errors";
 import type {
 	CancelablePromise,
 	get_organizations_user_roles_response,
+	search_users_response,
 } from "@kinde/management-api-js";
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -226,7 +227,6 @@ describe("Orgs API Tests", () => {
 		expect(data).toMatchObject(mockForbiddenError);
 	});
 
-	/* Test POST /:orgId/activate (Activate Admin Role) */
 	it("POST /api/orgs/:orgId/activate - should assign admin role (authenticated user in org)", async () => {
 		const app = setupApp({
 			isAuthenticated: true,
@@ -265,7 +265,7 @@ describe("Orgs API Tests", () => {
 		// Mock getOrganizationUserRoles to return a role for the user
 		mockOrganizations.getOrganizationUserRoles = vi.fn(
 			async ({ orgCode, userId }) => {
-				return { roles: [{ id: "basic-id" }] }; // Match role ID from mockRoles
+				return { roles: [{ id: "basic" }] }; // Match role ID from mockRoles
 			},
 		) as unknown as (data: {
 			orgCode: string;
@@ -305,5 +305,372 @@ describe("Orgs API Tests", () => {
 		const data = await response.json();
 		expect(response.status).toBe(400);
 		expect(data).toMatchObject(mockBadRequestError);
+	});
+
+	it("POST /api/orgs/:orgId/invite - should invite new user", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "mock-org",
+				permissions: ["manage:org"],
+			},
+		});
+		const formData = new FormData();
+		formData.append("email", "newuser@example.com");
+		formData.append("firstName", "New");
+		formData.append("lastName", "User");
+
+		const response = await app.request(
+			"/api/orgs/mock-org/invite",
+			{ method: "POST", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(data).toEqual({ success: true });
+		expect(mockUsers.createUser).toHaveBeenCalled();
+		expect(mockOrganizations.createOrganizationUserRole).toHaveBeenCalledWith({
+			orgCode: "mock-org",
+			userId: "new-user-id",
+			requestBody: { role_id: "basic" },
+		});
+	});
+
+	it("POST /api/orgs/:orgId/invite - should invite existing user", async () => {
+		mockSearch.searchUsers = vi.fn(async ({ query }) => ({
+			results: [{ id: "existing-user-id", email: query }],
+		})) as unknown as (data: {
+			query: string;
+		}) => CancelablePromise<search_users_response>;
+
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "mock-org",
+				permissions: ["manage:org"],
+			},
+		});
+		const formData = new FormData();
+		formData.append("email", "existinguser@example.com");
+		formData.append("firstName", "Existing");
+		formData.append("lastName", "User");
+
+		const response = await app.request(
+			"/api/orgs/mock-org/invite",
+			{ method: "POST", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(data).toEqual({ success: true });
+		expect(mockOrganizations.addOrganizationUsers).toHaveBeenCalledWith({
+			orgCode: "mock-org",
+			requestBody: { users: [{ id: "existing-user-id", roles: ["basic"] }] },
+		});
+		expect(mockUsers.createUser).not.toHaveBeenCalled();
+	});
+
+	it("POST /api/orgs/:orgId/invite - should fail with invalid form data", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "mock-org",
+				permissions: ["manage:org"],
+			},
+		});
+		const formData = new FormData();
+		formData.append("email", "invalid-email"); // Invalid email
+		formData.append("firstName", ""); // Missing firstName
+		formData.append("lastName", "User");
+
+		const response = await app.request(
+			"/api/orgs/mock-org/invite",
+			{ method: "POST", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(data).toMatchObject(
+			mockZodError("This is not a valid email,\nFirst name is required"),
+		);
+	});
+
+	it("POST /api/orgs/:orgId/invite - should fail if user not associated with org", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "other-org",
+				permissions: ["manage:org"],
+			}, // Different orgCode
+		});
+		const formData = new FormData();
+		formData.append("email", "newuser@example.com");
+		formData.append("firstName", "New");
+		formData.append("lastName", "User");
+
+		const response = await app.request(
+			"/api/orgs/mock-org/invite",
+			{ method: "POST", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(401);
+		expect(data).toMatchObject(mockUnauthorizedError);
+	});
+
+	it("POST /api/orgs/:orgId/invite - should fail if user not admin", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: { id: "mock-user-id", orgCode: "mock-org", permissions: [] }, // No manage:org
+		});
+		const formData = new FormData();
+		formData.append("email", "newuser@example.com");
+		formData.append("firstName", "New");
+		formData.append("lastName", "User");
+
+		const response = await app.request(
+			"/api/orgs/mock-org/invite",
+			{ method: "POST", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(403);
+		expect(data).toMatchObject(mockForbiddenError);
+	});
+
+	it("DELETE /api/orgs/:orgId/users/:userId/roles/:roleName - should remove user role and user", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "mock-org",
+				permissions: ["manage:org"],
+			},
+		});
+
+		const response = await app.request(
+			"/api/orgs/mock-org/users/target-user-id/roles/basic",
+			{ method: "DELETE" },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(data).toEqual({ success: true });
+		expect(mockOrganizations.deleteOrganizationUserRole).toHaveBeenCalledWith({
+			orgCode: "mock-org",
+			userId: "target-user-id",
+			roleId: "basic",
+		});
+		expect(mockOrganizations.removeOrganizationUser).toHaveBeenCalledWith({
+			orgCode: "mock-org",
+			userId: "target-user-id",
+		});
+	});
+
+	it("DELETE /api/orgs/:orgId/users/:userId/roles/:roleName - should fail if role not found", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "mock-org",
+				permissions: ["manage:org"],
+			},
+		});
+
+		const response = await app.request(
+			"/api/orgs/mock-org/users/target-user-id/roles/unknown",
+			{ method: "DELETE" },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(500);
+		expect(data).toMatchObject({
+			success: false,
+			error: { message: "", code: "InternalServerError" },
+		});
+		expect(mockOrganizations.deleteOrganizationUserRole).not.toHaveBeenCalled();
+		expect(mockOrganizations.removeOrganizationUser).not.toHaveBeenCalled();
+	});
+
+	it("DELETE /api/orgs/:orgId/users/:userId/roles/:roleName - should fail if user not associated with org", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "other-org",
+				permissions: ["manage:org"],
+			},
+		});
+
+		const response = await app.request(
+			"/api/orgs/mock-org/users/target-user-id/roles/basic",
+			{ method: "DELETE" },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(401);
+		expect(data).toMatchObject(mockUnauthorizedError);
+	});
+
+	// Failure: User Not Admin
+	it("DELETE /api/orgs/:orgId/users/:userId/roles/:roleName - should fail if user not admin", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: { id: "mock-user-id", orgCode: "mock-org", permissions: [] },
+		});
+
+		const response = await app.request(
+			"/api/orgs/mock-org/users/target-user-id/roles/basic",
+			{ method: "DELETE" },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(403);
+		expect(data).toMatchObject(mockForbiddenError);
+	});
+
+	it("PATCH /api/orgs/:orgId/users/:userId/roles - should update user role", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "mock-org",
+				permissions: ["manage:org"],
+			},
+		});
+		const formData = new FormData();
+		formData.append("currentRoleId", "basic");
+		formData.append("newRoleId", "admin");
+
+		const response = await app.request(
+			"/api/orgs/mock-org/users/target-user-id/roles",
+			{ method: "PATCH", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(data).toEqual({ success: true });
+		expect(mockOrganizations.createOrganizationUserRole).toHaveBeenCalledWith({
+			orgCode: "mock-org",
+			userId: "target-user-id",
+			requestBody: { role_id: "admin" },
+		});
+		expect(mockOrganizations.deleteOrganizationUserRole).toHaveBeenCalledWith({
+			orgCode: "mock-org",
+			userId: "target-user-id",
+			roleId: "basic",
+		});
+	});
+
+	it("PATCH /api/orgs/:orgId/users/:userId/roles - should fail with invalid form data", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "mock-org",
+				permissions: ["manage:org"],
+			},
+		});
+		const formData = new FormData();
+		formData.append("currentRoleId", "basic");
+		// Missing newRoleId
+
+		const response = await app.request(
+			"/api/orgs/mock-org/users/target-user-id/roles",
+			{ method: "PATCH", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(data).toMatchObject(mockZodError("Required"));
+	});
+
+	it("PATCH /api/orgs/:orgId/users/:userId/roles - should fail if role not found", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "mock-org",
+				permissions: ["manage:org"],
+			},
+		});
+		const formData = new FormData();
+		formData.append("currentRoleId", "basic");
+		formData.append("newRoleId", "unknown");
+
+		const response = await app.request(
+			"/api/orgs/mock-org/users/target-user-id/roles",
+			{ method: "PATCH", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(data).toMatchObject(
+			mockZodError(
+				"Invalid enum value. Expected 'admin' | 'basic', received 'unknown'",
+			),
+		);
+		expect(mockOrganizations.createOrganizationUserRole).not.toHaveBeenCalled();
+		expect(mockOrganizations.deleteOrganizationUserRole).not.toHaveBeenCalled();
+	});
+
+	it("PATCH /api/orgs/:orgId/users/:userId/roles - should fail if user not associated with org", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: {
+				id: "mock-user-id",
+				orgCode: "other-org",
+				permissions: ["manage:org"],
+			},
+		});
+		const formData = new FormData();
+		formData.append("currentRoleId", "basic");
+		formData.append("newRoleId", "Admin");
+
+		const response = await app.request(
+			"/api/orgs/mock-org/users/target-user-id/roles",
+			{ method: "PATCH", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(401);
+		expect(data).toMatchObject(mockUnauthorizedError);
+	});
+
+	it("PATCH /api/orgs/:orgId/users/:userId/roles - should fail if user not admin", async () => {
+		const app = setupApp({
+			isAuthenticated: true,
+			user: { id: "mock-user-id", orgCode: "mock-org", permissions: [] },
+		});
+		const formData = new FormData();
+		formData.append("currentRoleId", "basic");
+		formData.append("newRoleId", "Admin");
+
+		const response = await app.request(
+			"/api/orgs/mock-org/users/target-user-id/roles",
+			{ method: "PATCH", body: formData },
+			mockKindeBindings,
+		);
+		const data = await response.json();
+
+		expect(response.status).toBe(403);
+		expect(data).toMatchObject(mockForbiddenError);
 	});
 });

@@ -6,7 +6,7 @@ import {
 	forbiddenRequestException,
 	unauthorizedRequestException,
 } from "@/server/utils/errors";
-import type { KindeBindings, Variables } from "@/server/utils/kinde"; // Adjust path if needed
+import type { KindeBindings, Variables } from "@/server/utils/kinde";
 import type {
 	ClaimTokenType,
 	CreateOrgURLOptions,
@@ -239,8 +239,8 @@ export const mockGetRoles = async (
 ) => {
 	if (!c.var.roles) {
 		c.set("roles", [
-			{ id: "admin-id", key: "admin", name: "Admin" },
-			{ id: "basic-id", key: "basic", name: "basic" },
+			{ id: "admin", key: "admin", name: "admin" },
+			{ id: "basic", key: "basic", name: "basic" },
 		]);
 	}
 	await next();
@@ -383,9 +383,10 @@ export const mockRoles = {
 
 // Mock Users from management API
 export const mockUsers = {
-	createUser: async ({ requestBody }: { requestBody: { email: string } }) => ({
+	createUser: vi.fn(async ({ requestBody }) => ({
 		id: "new-user-id",
-	}),
+		email: requestBody.identities[0].details.email,
+	})),
 	refreshUserClaims: async ({ userId }: { userId: string }) => undefined,
 } as unknown as typeof Users;
 

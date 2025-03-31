@@ -8,10 +8,6 @@ export const mockUser: UserType = {
 	picture: "mock-picture",
 };
 
-export const mockOrg: { orgCode: string | null } = {
-	orgCode: "mock-org",
-};
-
 export const mockCurrentOrg = {
 	currentOrg: "mock-org",
 };
@@ -22,14 +18,6 @@ export const mockPermissions: {
 } = {
 	orgCode: "mock-org",
 	permissions: ["manage:org"],
-};
-
-export const mockPermission: {
-	orgCode: string | null;
-	isGranted: boolean;
-} = {
-	orgCode: "mock-org",
-	isGranted: true,
 };
 
 export const mockAdminUser = {
