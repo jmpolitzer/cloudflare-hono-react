@@ -1,3 +1,4 @@
+import { applyD1Migrations, env } from "cloudflare:test";
 import type {
 	ResendBindings,
 	ResendVariables,
@@ -29,6 +30,8 @@ import type { Context, Next } from "hono";
 import type { Resend } from "resend";
 import { vi } from "vitest";
 import { mockAdminUser } from "./mocks";
+
+await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
 
 // Mocked environment bindings
 export const mockKindeBindings: KindeBindings = {
@@ -444,6 +447,11 @@ export const mockInitResendEmailer = async (
 ) => {
 	c.set("resendClient", mockResendClient);
 	await next();
+};
+
+export const mockNotFoundError = {
+	success: false,
+	error: { code: "NotFound", message: "" },
 };
 
 export const mockBadRequestError = {

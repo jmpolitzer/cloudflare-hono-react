@@ -47,3 +47,7 @@ DB:
   - `ctrl-z to close`
 2. Create Migration: `bun drizzle-kit generate`
 3. Run Migration: `bun drizzle-kit migrate`
+
+Testing:
+
+1. API Tests
