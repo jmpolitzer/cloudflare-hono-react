@@ -10,8 +10,8 @@ import {
 	mockEnsureUser,
 	mockGetKindeClient,
 	mockNotFoundError,
-} from "../setup";
-import type { MockKindeClientOptions } from "../setup";
+} from "../vitest-setup";
+import type { MockKindeClientOptions } from "../vitest-setup";
 
 describe("Notes API Tests", () => {
 	const db = drizzle(testEnv.DB, { schema });

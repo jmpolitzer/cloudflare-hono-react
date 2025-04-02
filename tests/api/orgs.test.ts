@@ -25,8 +25,8 @@ import {
 	mockUnauthorizedError,
 	mockUsers,
 	mockZodError,
-} from "../setup";
-import type { MockKindeClientOptions } from "../setup";
+} from "../vitest-setup";
+import type { MockKindeClientOptions } from "../vitest-setup";
 
 describe("Orgs API Tests", () => {
 	// Helper to create app with configurable auth options

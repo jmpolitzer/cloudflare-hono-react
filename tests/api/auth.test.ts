@@ -7,8 +7,8 @@ import {
 	mockGetKindeClient,
 	mockKindeBindings,
 	mockUnauthorizedError,
-} from "../setup";
-import type { MockKindeClientOptions } from "../setup";
+} from "../vitest-setup";
+import type { MockKindeClientOptions } from "../vitest-setup";
 
 describe("Auth API Tests", () => {
 	const setupApp = (authOptions?: MockKindeClientOptions) => {

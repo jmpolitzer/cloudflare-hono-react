@@ -13,7 +13,10 @@
 		"driz-stu-prod": "cross-env NODE_ENV=production drizzle-kit studio",
 		"lint": "biome check ./src",
 		"format": "biome check --write ./src",
-		"test:api": "bun vitest"
+		"test:api": "bun vitest",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:report": "playwright show-report"
 	},
 	"dependencies": {
 		"@hono/zod-validator": "^0.4.2",
@@ -56,6 +59,7 @@
 		"@biomejs/biome": "^1.9.4",
 		"@cloudflare/vitest-pool-workers": "^0.8.4",
 		"@cloudflare/workers-types": "^4.20241205.0",
+		"@playwright/test": "^1.51.1",
 		"@tanstack/router-devtools": "^1.87.9",
 		"@tanstack/router-plugin": "^1.87.11",
 		"@types/node": "^22.10.2",

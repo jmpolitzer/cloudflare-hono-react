@@ -11,6 +11,10 @@ dist/
 .idea/usage.statistics.xml
 .idea/shelf
 
+#test
+playwright-report/
+test-results/
+
 # deps
 node_modules/
 .wrangler
