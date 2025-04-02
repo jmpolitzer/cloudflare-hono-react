@@ -18,7 +18,6 @@ export const removeOrgUserSchema = z.object({
 });
 
 export const updateOrgUserRolesSchema = z.object({
-	userId: z.string().min(1, "User ID is required"),
 	currentRoleId: z.enum(["admin", "basic"]),
 	newRoleId: z.enum(["admin", "basic"]),
 });

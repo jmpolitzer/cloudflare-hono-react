@@ -22,7 +22,7 @@ function AccountComponent() {
 	if (!userOrgsQuery.data) return null;
 
 	const currentOrg = userOrgsQuery.data.orgs.find(
-		(org) => org.id === currentUser.data.current_org,
+		(org) => org.id === currentUser.data.currentOrg,
 	);
 	if (!currentOrg) return null;
 

@@ -25,17 +25,15 @@ export default function OrgUserRoleSelect({
 	role,
 	userId,
 }: OrgUserRoleSelectProps) {
-	const updateOrgUserRoleMutation = useUpdateOrgUserRole(orgId);
+	const updateOrgUserRoleMutation = useUpdateOrgUserRole({ orgId, userId });
 	const form = useForm<UpdateOrgUserRoleSchemaType>({
 		defaultValues: {
-			userId,
 			currentRoleId: role,
 			newRoleId: role,
 		},
 		onSubmit: async ({ value }) => {
 			try {
 				await updateOrgUserRoleMutation.mutateAsync({
-					userId,
 					currentRoleId: role,
 					newRoleId: value.newRoleId,
 				});

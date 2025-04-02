@@ -22,7 +22,7 @@ export default function Layout({ children }: LayoutProps) {
 	return (
 		<SidebarProvider>
 			<AppSidebar
-				currentOrg={user.data.current_org}
+				currentOrg={user.data.currentOrg}
 				orgs={userOrgsQuery.data?.orgs || []}
 				user={user.data}
 			/>

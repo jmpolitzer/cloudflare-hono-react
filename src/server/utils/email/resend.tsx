@@ -3,11 +3,11 @@ import InviteUserToOrgEmail from "./templates/invite-user-to-org";
 
 import type { MiddlewareHandler } from "hono";
 
-interface Variables {
+export interface ResendVariables {
 	resendClient: Resend;
 }
 
-interface ResendBindings {
+export interface ResendBindings {
 	RESEND_API_KEY: string;
 }
 
@@ -15,7 +15,7 @@ const DEFAULT_EMAIL_SENDER = "Cloudflare-React-Hono <no-reply@pltzr.io>";
 
 export const initResendEmailer: MiddlewareHandler<{
 	Bindings: ResendBindings;
-	Variables: Variables;
+	Variables: ResendVariables;
 }> = async (c, next) => {
 	const resendClient = new Resend(c.env.RESEND_API_KEY);
 

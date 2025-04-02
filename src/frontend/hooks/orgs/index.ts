@@ -149,7 +149,10 @@ export function useOrgUsers(orgId: string) {
 	});
 }
 
-export function useUpdateOrgUserRole(orgId: string) {
+export function useUpdateOrgUserRole({
+	orgId,
+	userId,
+}: { orgId: string; userId: string }) {
 	const queryClient = useQueryClient();
 
 	return useMutation<
@@ -164,7 +167,7 @@ export function useUpdateOrgUserRole(orgId: string) {
 		mutationFn: async (orgForm) => {
 			const res = await client.api.orgs[":orgId"].users[":userId"].roles.$patch(
 				{
-					param: { orgId, userId: orgForm.userId },
+					param: { orgId, userId },
 					form: orgForm,
 				},
 			);

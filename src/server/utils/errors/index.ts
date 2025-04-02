@@ -1,7 +1,6 @@
 import { ApiError } from "@kinde/management-api-js";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { StatusCode } from "hono/utils/http-status";
 import type { z } from "zod";
 
 export const badRequestException = (message?: string) =>
@@ -30,9 +29,8 @@ export const unknownRequestException = (error: unknown) => {
 			message: error.message,
 		});
 	}
-
 	if (error instanceof ApiError) {
-		return new HTTPException(error.status as StatusCode, {
+		return new HTTPException(500, {
 			message: error.message,
 		});
 	}
@@ -40,8 +38,6 @@ export const unknownRequestException = (error: unknown) => {
 
 export const errorHandler = (error: Error | HTTPException, c: Context) => {
 	// TODO: Add sentry error logging
-	console.log("=== Caught Error ===");
-
 	if (error instanceof HTTPException) {
 		if (error.status === 400) {
 			return c.json(
@@ -108,8 +104,6 @@ export const errorHandler = (error: Error | HTTPException, c: Context) => {
 			);
 		}
 	}
-
-	console.log(error);
 
 	return c.json(
 		{

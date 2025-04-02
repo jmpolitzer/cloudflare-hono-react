@@ -9,6 +9,10 @@ import {
 } from "@kinde/management-api-js";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 
+import type {
+	ResendBindings,
+	ResendVariables,
+} from "@/server/utils/email/resend";
 import {
 	forbiddenRequestException,
 	unauthorizedRequestException,
@@ -16,18 +20,21 @@ import {
 } from "@/server/utils/errors";
 import { MANAGE_ORG } from "@/shared/constants";
 import type { SessionManager, UserType } from "@kinde-oss/kinde-typescript-sdk";
-import type { get_roles_response } from "@kinde/management-api-js";
+import type {
+	Organizations,
+	Search,
+	get_roles_response,
+} from "@kinde/management-api-js";
 import type { Context, MiddlewareHandler } from "hono";
 import type { CookieOptions } from "hono/utils/cookie";
 
-interface Variables {
+export interface Variables {
 	kindeClient: ReturnType<typeof initKindeClient>;
 	roles: get_roles_response["roles"];
-	// Snake case is used to match the API response.
-	user: UserType & { current_org: string | null } & { permissions: string[] };
+	user: UserType & { currentOrg: string | null } & { permissions: string[] };
 }
 
-interface KindeBindings {
+export interface KindeBindings {
 	BASE_URL: string;
 	KINDE_AUTH_DOMAIN: string;
 	KINDE_CLIENT_ID: string;
@@ -35,6 +42,34 @@ interface KindeBindings {
 	KINDE_REDIRECT_URL: string;
 	KINDE_M2M_ID: string;
 	KINDE_M2M_SECRET: string;
+}
+
+export interface KindeRouteBindings {
+	ensureUser?: MiddlewareHandler<{ Variables: Variables }>;
+	ensureOrgAssociation?: MiddlewareHandler<{ Variables: Variables }>;
+	ensureOrgAdmin?: MiddlewareHandler<{ Variables: Variables }>;
+	getKindeClient?: MiddlewareHandler<{
+		Bindings: KindeBindings;
+		Variables: Variables;
+	}>;
+	getRoles?: MiddlewareHandler<{ Variables: Variables }>;
+	initKindeApi?: MiddlewareHandler<{
+		Bindings: KindeBindings;
+		Variables: Variables;
+	}>;
+	refreshUser?: (args: {
+		userId: string;
+		kindeClient: ReturnType<typeof initKindeClient>;
+		manager: SessionManager;
+	}) => Promise<void>;
+	initResendEmailer?: MiddlewareHandler<{
+		Bindings: ResendBindings;
+		Variables: ResendVariables;
+	}>;
+	Organizations?: typeof Organizations;
+	Roles?: typeof Roles;
+	Search?: typeof Search;
+	Users?: typeof Users;
 }
 
 const initKindeClient = (bindings: KindeBindings) =>
@@ -95,7 +130,7 @@ export const ensureUser: MiddlewareHandler<{
 
 			c.set("user", {
 				...profile,
-				current_org: currentOrg.orgCode,
+				currentOrg: currentOrg.orgCode,
 				permissions: permissions.permissions,
 			});
 		}
@@ -111,7 +146,7 @@ export const ensureOrgAssociation: MiddlewareHandler<{
 }> = async (c, next) => {
 	const orgId = c.req.param("orgId");
 
-	if (orgId !== c.var.user.current_org) {
+	if (orgId !== c.var.user.currentOrg) {
 		throw unauthorizedRequestException();
 	}
 
