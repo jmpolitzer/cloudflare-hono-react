@@ -1,9 +1,14 @@
-import { SquareTerminal } from "lucide-react";
+import { LayoutDashboard, Notebook } from "lucide-react";
 
 export default [
 	{
+		title: "Dashboard",
+		url: "/",
+		icon: LayoutDashboard,
+	},
+	{
 		title: "Notes",
 		url: "/notes",
-		icon: SquareTerminal,
+		icon: Notebook,
 	},
 ];

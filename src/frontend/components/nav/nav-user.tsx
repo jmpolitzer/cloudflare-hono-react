@@ -20,7 +20,7 @@ import {
 } from "@/frontend/components/ui/sidebar";
 import type { CurrentUser } from "@/frontend/hooks/users";
 import { Link } from "@tanstack/react-router";
-import { BadgeCheck, ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
 
 export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 	const { isMobile } = useSidebar();
@@ -41,8 +41,18 @@ export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 								<AvatarFallback className="rounded-lg">CN</AvatarFallback>
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-semibold">{fullName}</span>
-								<span className="truncate text-xs">{user.email}</span>
+								<span
+									className="truncate font-semibold"
+									data-testid="current-user-name"
+								>
+									{fullName}
+								</span>
+								<span
+									className="truncate text-xs"
+									data-testid="current-user-email"
+								>
+									{user.email}
+								</span>
 							</div>
 							<ChevronsUpDown className="ml-auto size-4" />
 						</SidebarMenuButton>
@@ -69,7 +79,7 @@ export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 						<DropdownMenuGroup>
 							<DropdownMenuItem asChild>
 								<Link to="/settings">
-									<BadgeCheck />
+									<Settings />
 									Settings
 								</Link>
 							</DropdownMenuItem>

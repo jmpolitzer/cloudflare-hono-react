@@ -26,10 +26,19 @@ export default function Breadcrumbs() {
 						<BreadcrumbItem>
 							{i + 1 < matchesWithCrumbs.length ? (
 								<BreadcrumbLink asChild className="hidden md:block">
-									<Link from={match.fullPath}>{match.loaderData?.crumb}</Link>
+									<Link
+										from={match.fullPath}
+										data-testid={`${match.loaderData?.crumb.toLowerCase()}-breadcrumb`}
+									>
+										{match.loaderData?.crumb}
+									</Link>
 								</BreadcrumbLink>
 							) : (
-								<BreadcrumbPage>{match.loaderData?.crumb}</BreadcrumbPage>
+								<BreadcrumbPage
+									data-testid={`${match.loaderData?.crumb.toLowerCase()}-breadcrumb`}
+								>
+									{match.loaderData?.crumb}
+								</BreadcrumbPage>
 							)}
 						</BreadcrumbItem>
 						{i + 1 < matchesWithCrumbs.length ? (

@@ -1,6 +1,7 @@
+// import OrgSwitcher from "@/frontend/components/nav/org-switcher";
+import HeaderLogo from "@/frontend/components/nav/header-logo";
 import NavMain from "@/frontend/components/nav/nav-main";
 import NavUser from "@/frontend/components/nav/nav-user";
-import OrgSwitcher from "@/frontend/components/nav/org-switcher";
 import {
 	Sidebar,
 	SidebarContent,
@@ -20,7 +21,9 @@ export default function AppSidebar({ currentOrg, orgs, user }: SidebarProps) {
 	return (
 		<Sidebar collapsible="icon">
 			<SidebarHeader>
-				<OrgSwitcher currentOrg={currentOrg} orgs={orgs} />
+				<HeaderLogo />
+				{/* Uncomment to enable users to switch between orgs. */}
+				{/* <OrgSwitcher currentOrg={currentOrg} orgs={orgs} /> */}
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain />
