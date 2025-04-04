@@ -18,14 +18,22 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/frontend/components/ui/sidebar";
-import type { CurrentUser } from "@/frontend/hooks/users";
+import type { CurrentUser, UserOrgs } from "@/frontend/hooks/users";
 import { Link } from "@tanstack/react-router";
 import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
 
-export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
+export interface NavUserProps {
+	orgs: NonNullable<UserOrgs>["orgs"];
+	user: NonNullable<CurrentUser>;
+}
+
+export default function NavUser({ orgs, user }: NavUserProps) {
 	const { isMobile } = useSidebar();
 	const fullName = `${user.given_name ?? ""} ${user.family_name ?? ""}`;
 	const picture = user.picture ?? undefined;
+	const currentOrg = orgs.find((org) => org.id === user.currentOrg);
+
+	if (!currentOrg) return null;
 
 	return (
 		<SidebarMenu>
@@ -49,9 +57,9 @@ export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 								</span>
 								<span
 									className="truncate text-xs"
-									data-testid="current-user-email"
+									data-testid="current-user-org"
 								>
-									{user.email}
+									{currentOrg.name}
 								</span>
 							</div>
 							<ChevronsUpDown className="ml-auto size-4" />
@@ -71,7 +79,7 @@ export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
 									<span className="truncate font-semibold">{fullName}</span>
-									<span className="truncate text-xs">{user.email}</span>
+									<span className="truncate text-xs">{currentOrg.name}</span>
 								</div>
 							</div>
 						</DropdownMenuLabel>

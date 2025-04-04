@@ -9,15 +9,18 @@ import { Separator } from "@/frontend/components/ui/separator";
 import { useActivateOrg } from "@/frontend/hooks/orgs";
 import type { CurrentUser, UserOrgs } from "@/frontend/hooks/users";
 import { MANAGE_ORG } from "@/shared/constants";
+import OrganizationSwitcher from "../orgs/org-switcher";
 
 interface OrganizationSectionProps {
 	currentOrg: NonNullable<UserOrgs>["orgs"][0];
 	currentUser: NonNullable<CurrentUser>;
+	orgs: NonNullable<UserOrgs>["orgs"];
 }
 
 export default function OrganizationSection({
 	currentOrg,
 	currentUser,
+	orgs,
 }: OrganizationSectionProps) {
 	const {
 		isPending,
@@ -34,7 +37,12 @@ export default function OrganizationSection({
 			<Separator />
 			{/* Organization Information Section */}
 			<div>
-				<h3 className="mb-4 font-medium text-lg">Organization Information</h3>
+				<div className="mb-4 flex justify-between">
+					<h3 className="font-medium text-lg">Organization Information</h3>
+					{orgs.length > 1 && (
+						<OrganizationSwitcher currentOrg={currentOrg.id} orgs={orgs} />
+					)}
+				</div>
 				{isError && <AlertError message={error.message} />}
 				{isOrgActivated ? (
 					<Can action={MANAGE_ORG} permissions={currentUser.permissions}>

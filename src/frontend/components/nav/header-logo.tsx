@@ -5,7 +5,7 @@ import {
 	SidebarMenuItem,
 } from "@/frontend/components/ui/sidebar";
 import { Link } from "@tanstack/react-router";
-import { Mail } from "lucide-react";
+import { Power } from "lucide-react";
 
 export default function HeaderLogo() {
 	return (
@@ -17,8 +17,8 @@ export default function HeaderLogo() {
 						className="data-[slot=sidebar-menu-button]:!p-1.5"
 					>
 						<Link to="/">
-							<Mail className="h-5 w-5" />
-							<span className="font-semibold text-base">Envelope</span>
+							<Power className="h-5 w-5" />
+							<span className="font-semibold text-base">AppStarter</span>
 						</Link>
 					</SidebarMenuButton>
 				</SidebarMenuItem>

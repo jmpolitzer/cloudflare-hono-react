@@ -60,6 +60,7 @@ function AccountComponent() {
 			<OrganizationSection
 				currentOrg={currentOrg}
 				currentUser={currentUser.data}
+				orgs={userOrgsQuery.data.orgs}
 			/>
 		</Card>
 	);

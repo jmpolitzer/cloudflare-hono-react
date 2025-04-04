@@ -10,9 +10,7 @@ test.describe("Authentication", () => {
 	test("should show user profile when authenticated", async ({ page }) => {
 		await page.goto("/");
 		await expect(page.getByTestId("current-user-name")).toHaveText("Mock User");
-		await expect(page.getByTestId("current-user-email")).toHaveText(
-			"mockuser@example.com",
-		);
+		await expect(page.getByTestId("current-user-org")).toHaveText("Mock Org");
 		await expect(page.getByTestId("dashboard-breadcrumb")).toHaveText(
 			"Dashboard",
 		);
