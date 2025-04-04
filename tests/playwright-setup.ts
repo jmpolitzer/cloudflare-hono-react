@@ -77,8 +77,7 @@ export async function setupMocks(page: Page) {
 						{
 							id: "mock-user-id",
 							email: "mockuser@example.com",
-							given_name: "Mock",
-							family_name: "User",
+							full_name: "Mock User",
 							picture: "https://example.com/avatar.jpg",
 							roles: ["admin"],
 							created_at: "2024-01-01T00:00:00Z",
@@ -87,8 +86,7 @@ export async function setupMocks(page: Page) {
 						{
 							id: "basic-user-id",
 							email: "basicuser@example.com",
-							given_name: "Basic",
-							family_name: "User",
+							full_name: "Basic User",
 							picture: "https://example.com/avatar2.jpg",
 							roles: ["basic"],
 							created_at: "2024-01-02T00:00:00Z",
@@ -97,8 +95,7 @@ export async function setupMocks(page: Page) {
 						{
 							id: "new-user-id",
 							email: "newuser@example.com",
-							given_name: "New",
-							family_name: "User",
+							full_name: "New User",
 							picture: null,
 							roles: ["basic"],
 							created_at: "2024-01-03T00:00:00Z",
@@ -107,6 +104,14 @@ export async function setupMocks(page: Page) {
 					],
 				},
 			}),
+		});
+	});
+
+	await page.route("/api/orgs/mock-org", (route) => {
+		route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify({ success: true }),
 		});
 	});
 }
