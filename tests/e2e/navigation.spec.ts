@@ -29,18 +29,20 @@ test.describe("Navigation", () => {
 		expect(page.url()).toBe("http://localhost:5173/");
 	});
 
-	// test("should show breadcrumb navigation", async ({ page }) => {
-	// 	await page.goto("/notes");
+	test("should show breadcrumb navigation", async ({ page }) => {
+		await page.goto("/notes");
 
-	// 	// Check breadcrumb structure
-	// 	await expect(
-	// 		page.getByRole("navigation", { name: "Breadcrumb" }),
-	// 	).toContainText("Notes");
+		// Check breadcrumb structure
+		await expect(
+			page.getByRole("navigation", { name: "Breadcrumb" }),
+		).toContainText("Notes");
 
-	// 	// Navigate to a specific note
-	// 	await page.getByText("Test Note").click();
-	// 	await expect(
-	// 		page.getByRole("navigation", { name: "Breadcrumb" }),
-	// 	).toContainText("Notes / Test Note");
-	// });
+		// Navigate to a specific note
+		await page.getByRole("heading", { name: "Test Note" }).click();
+		await page.getByTestId("view-note-1").click();
+
+		await expect(
+			page.getByRole("navigation", { name: "Breadcrumb" }),
+		).toContainText("Notes1");
+	});
 });

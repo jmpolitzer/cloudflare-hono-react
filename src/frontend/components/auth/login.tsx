@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+// import { Link } from "@tanstack/react-router";
 import { AlertTriangle, LogIn, UserPlus } from "lucide-react";
 
 import { Button } from "@/frontend/components/ui/button";
@@ -40,7 +40,7 @@ export default function Login({ orgless = false }: { orgless?: boolean }) {
 
 					{!orgless && (
 						<div className="grid gap-2">
-							<Button className="w-full" asChild>
+							<Button className="w-full" asChild data-testid="login-button">
 								<a
 									href="/api/auth/login"
 									className="flex items-center justify-center gap-2"
@@ -69,6 +69,7 @@ export default function Login({ orgless = false }: { orgless?: boolean }) {
 						variant={orgless ? "default" : "outline"}
 						className="w-full"
 						asChild
+						data-testid="register-button"
 					>
 						<a
 							href="/api/auth/register"
@@ -86,15 +87,15 @@ export default function Login({ orgless = false }: { orgless?: boolean }) {
 					<div>
 						By continuing, you agree to our Terms of Service and Privacy Policy.
 					</div>
-					<div>
+					{/* <div>
 						Need help?{" "}
 						<Link
-							href="/support"
+							to="/support"
 							className="underline underline-offset-4 hover:text-primary"
 						>
 							Contact support
 						</Link>
-					</div>
+					</div> */}
 				</CardFooter>
 			</Card>
 		</div>
