@@ -31,65 +31,55 @@ test.describe("Settings", () => {
 		await expect(page.getByText("New User")).toBeVisible();
 	});
 
-	// test("should invite new user", async ({ page }) => {
-	// 	// Navigate to Users tab
-	// 	await page.getByRole("tab", { name: "Users" }).click();
+	test("should invite new user", async ({ page }) => {
+		const newUserEmail = "newuser@example.com";
 
-	// 	// Click invite button
-	// 	await page.getByRole("button", { name: "Invite User" }).click();
+		// Click invite button
+		await page.getByRole("button", { name: "Invite User" }).click();
 
-	// 	// Fill in invite form
-	// 	await page.getByLabel("Email").fill("newuser@example.com");
-	// 	await page.getByLabel("First Name").fill("New");
-	// 	await page.getByLabel("Last Name").fill("User");
+		// Fill in invite form
+		await page.getByLabel("Email").fill(newUserEmail);
+		await page.getByLabel("First Name").fill("New");
+		await page.getByLabel("Last Name").fill("User");
 
-	// 	// Submit form
-	// 	await page.getByRole("button", { name: "Send Invitation" }).click();
+		// Submit form
+		await page.getByRole("button", { name: "Submit" }).click();
 
-	// 	// Verify success message
-	// 	await expect(page.getByText("Invitation sent successfully")).toBeVisible();
-	// });
+		// Verify success message
+		await expect(
+			page.getByText(`${newUserEmail} invited successfully`),
+		).toBeVisible();
+	});
 
-	// test("should change user role", async ({ page }) => {
-	// 	// Navigate to Users tab
-	// 	await page.getByRole("tab", { name: "Users" }).click();
+	test("should change user role", async ({ page }) => {
+		// Open role menu for a user
+		await page.getByTestId("role-select-basic-user-id").click();
 
-	// 	// Open role menu for a user
-	// 	await page.getByRole("button", { name: "Change Role" }).first().click();
+		// Select new role
+		await page.getByTestId("admin-role-option-basic-user-id").click();
 
-	// 	// Select new role
-	// 	await page.getByRole("menuitem", { name: "Admin" }).click();
+		// Verify success message
+		await expect(page.getByText("User role updated")).toBeVisible();
+	});
 
-	// 	// Verify success message
-	// 	await expect(page.getByText("Role updated successfully")).toBeVisible();
-	// });
+	test("should remove user from organization", async ({ page }) => {
+		// Click user menu and remove button for a user
+		await page.getByTestId("user-menu-basic-user-id").click();
+		await page.getByTestId("remove-user-basic-user-id").click();
 
-	// test("should remove user from organization", async ({ page }) => {
-	// 	// Navigate to Users tab
-	// 	await page.getByRole("tab", { name: "Users" }).click();
+		// Verify success message
+		await expect(
+			page.getByText("User removed from organization."),
+		).toBeVisible();
+	});
 
-	// 	// Click remove button for a user
-	// 	await page.getByRole("button", { name: "Remove User" }).first().click();
+	test("should handle errors gracefully", async ({ page }) => {
+		// Try to invite user with invalid email
+		await page.getByRole("button", { name: "Invite User" }).click();
+		await page.getByLabel("Email").fill("invalid-email");
+		await page.getByRole("button", { name: "Submit" }).click();
 
-	// 	// Confirm removal
-	// 	await page.getByRole("button", { name: "Confirm" }).click();
-
-	// 	// Verify success message
-	// 	await expect(page.getByText("User removed successfully")).toBeVisible();
-	// });
-
-	// test("should handle errors gracefully", async ({ page }) => {
-	// 	// Navigate to Users tab
-	// 	await page.getByRole("tab", { name: "Users" }).click();
-
-	// 	// Try to invite user with invalid email
-	// 	await page.getByRole("button", { name: "Invite User" }).click();
-	// 	await page.getByLabel("Email").fill("invalid-email");
-	// 	await page.getByRole("button", { name: "Send Invitation" }).click();
-
-	// 	// Verify error message
-	// 	await expect(
-	// 		page.getByText("Please enter a valid email address"),
-	// 	).toBeVisible();
-	// });
+		// Verify error message
+		await expect(page.getByText("This is not a valid email")).toBeVisible();
+	});
 });

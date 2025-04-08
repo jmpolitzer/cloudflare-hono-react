@@ -42,6 +42,7 @@ export function createAuthRoutes({
 		})
 		.get("/register", async (c) => {
 			try {
+				// TODO: Use Management API to create org and pass in org_code.
 				// This is the same as register method, except it creates an organization in the background.
 				const registerUrl = await c.var.kindeClient.createOrg(
 					sessionManager(c),

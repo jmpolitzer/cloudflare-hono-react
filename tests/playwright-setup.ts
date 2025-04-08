@@ -114,4 +114,31 @@ export async function setupMocks(page: Page) {
 			body: JSON.stringify({ success: true }),
 		});
 	});
+
+	await page.route("/api/orgs/mock-org/invite", (route) => {
+		route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify({ success: true }),
+		});
+	});
+
+	await page.route("/api/orgs/mock-org/users/basic-user-id/roles", (route) => {
+		route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify({ success: true }),
+		});
+	});
+
+	await page.route(
+		"/api/orgs/mock-org/users/basic-user-id/roles/basic",
+		(route) => {
+			route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify({ success: true }),
+			});
+		},
+	);
 }

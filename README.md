@@ -51,3 +51,4 @@ DB:
 Testing:
 
 1. API Tests
+2. E2E Tests

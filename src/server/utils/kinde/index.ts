@@ -26,6 +26,7 @@ import type {
 	get_roles_response,
 } from "@kinde/management-api-js";
 import type { Context, MiddlewareHandler } from "hono";
+import { HTTPException } from "hono/http-exception";
 import type { CookieOptions } from "hono/utils/cookie";
 
 export interface Variables {
@@ -115,6 +116,7 @@ export const ensureUser: MiddlewareHandler<{
 	Variables: Variables;
 }> = async (c, next) => {
 	try {
+		// // TODO: Use Management API to create org if user does not have one.
 		const manager = sessionManager(c);
 		const isAuthenticated = await c.var.kindeClient.isAuthenticated(manager);
 
@@ -137,6 +139,10 @@ export const ensureUser: MiddlewareHandler<{
 
 		await next();
 	} catch (error) {
+		if (error instanceof HTTPException) {
+			throw error;
+		}
+
 		throw unknownRequestException(error);
 	}
 };

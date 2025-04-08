@@ -65,12 +65,22 @@ export default function OrgUserRoleSelect({
 						}}
 						value={field.state.value}
 					>
-						<SelectTrigger>
+						<SelectTrigger data-testid={`role-select-${userId}`}>
 							<SelectValue placeholder="Select a role" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="admin">admin</SelectItem>
-							<SelectItem value="basic">basic</SelectItem>
+							<SelectItem
+								value="admin"
+								data-testid={`admin-role-option-${userId}`}
+							>
+								admin
+							</SelectItem>
+							<SelectItem
+								value="basic"
+								data-testid={`basic-role-option-${userId}`}
+							>
+								basic
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				)}
