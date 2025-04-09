@@ -3,6 +3,7 @@ import {
 	createKindeServerClient,
 } from "@kinde-oss/kinde-typescript-sdk";
 import {
+	Organizations,
 	Roles,
 	Users,
 	init as initKindeManagementApi,
@@ -20,12 +21,9 @@ import {
 } from "@/server/utils/errors";
 import { MANAGE_ORG } from "@/shared/constants";
 import type { SessionManager, UserType } from "@kinde-oss/kinde-typescript-sdk";
-import type {
-	Organizations,
-	Search,
-	get_roles_response,
-} from "@kinde/management-api-js";
+import type { Search, get_roles_response } from "@kinde/management-api-js";
 import type { Context, MiddlewareHandler } from "hono";
+import { HTTPException } from "hono/http-exception";
 import type { CookieOptions } from "hono/utils/cookie";
 
 export interface Variables {
@@ -42,6 +40,7 @@ export interface KindeBindings {
 	KINDE_REDIRECT_URL: string;
 	KINDE_M2M_ID: string;
 	KINDE_M2M_SECRET: string;
+	KINDE_CONNECTION_ID: string;
 }
 
 export interface KindeRouteBindings {
@@ -66,6 +65,17 @@ export interface KindeRouteBindings {
 		Bindings: ResendBindings;
 		Variables: ResendVariables;
 	}>;
+	registerUserToOrg?: (args: {
+		orgId: string;
+		role: "admin" | "basic";
+		user:
+			| {
+					email: string;
+					firstName: string;
+					lastName: string;
+			  }
+			| string;
+	}) => Promise<void>;
 	Organizations?: typeof Organizations;
 	Roles?: typeof Roles;
 	Search?: typeof Search;
@@ -137,6 +147,10 @@ export const ensureUser: MiddlewareHandler<{
 
 		await next();
 	} catch (error) {
+		if (error instanceof HTTPException) {
+			throw error;
+		}
+
 		throw unknownRequestException(error);
 	}
 };
@@ -201,6 +215,61 @@ export const refreshUser = async ({
 
 		/* Refresh the user's tokens to ensure that the user's claims are up-to-date */
 		await kindeClient.refreshTokens(manager);
+	} catch (error) {
+		throw unknownRequestException(error);
+	}
+};
+
+export const registerUserToOrg = async ({
+	orgId,
+	role,
+	user,
+}: {
+	orgId: string;
+	role: "admin" | "basic";
+	user: { email: string; firstName: string; lastName: string } | string;
+}) => {
+	try {
+		let userId: string | undefined;
+
+		if (typeof user === "string") {
+			userId = user;
+		} else {
+			/* Create User */
+			const newUser = await Users.createUser({
+				requestBody: {
+					profile: {
+						given_name: user.firstName,
+						family_name: user.lastName,
+					},
+					identities: [
+						{
+							type: "email",
+							details: {
+								email: user.email,
+							},
+						},
+					],
+				},
+			});
+
+			userId = newUser.id;
+		}
+
+		/* Add user to organization with role. */
+		await Organizations.addOrganizationUsers({
+			orgCode: orgId,
+			requestBody: {
+				users: [
+					{
+						id: userId,
+						roles: [role],
+					},
+				],
+			},
+		});
+
+		return;
 	} catch (error) {
 		throw unknownRequestException(error);
 	}

@@ -18,9 +18,10 @@ export default defineWorkersProject(async () => {
 			},
 		},
 		test: {
+			include: ["./tests/api/*.test.ts"],
 			globals: true,
 			reporters: ["verbose"],
-			setupFiles: ["./tests/setup.ts"],
+			setupFiles: ["./tests/vitest-setup.ts"],
 			poolOptions: {
 				workers: {
 					singleWorker: true,

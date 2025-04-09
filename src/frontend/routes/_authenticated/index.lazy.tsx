@@ -5,5 +5,5 @@ export const Route = createLazyFileRoute("/_authenticated/")({
 });
 
 function Index() {
-	return <div>Dashboard</div>;
+	return <div>Bird's Eye View</div>;
 }

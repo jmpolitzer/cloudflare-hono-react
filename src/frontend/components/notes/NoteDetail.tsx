@@ -63,6 +63,7 @@ export function NoteDetail({
 							size="sm"
 							asChild
 							className="rounded-r-none border-r"
+							data-testid={`view-note-${note.id}`}
 						>
 							<Link
 								to="/notes/$noteId"
@@ -83,6 +84,7 @@ export function NoteDetail({
 								? "rounded-none border-r"
 								: "rounded-r-none border-r"
 						}
+						data-testid={`edit-note-${note.id}`}
 					>
 						<Link
 							to="/notes/$noteId"
@@ -104,6 +106,7 @@ export function NoteDetail({
 								className={
 									"rounded-l-none text-destructive hover:text-destructive"
 								}
+								data-testid={`delete-note-${note.id}`}
 							>
 								<Trash2 className="h-4 w-4" />
 								<span className="sr-only">Delete note</span>

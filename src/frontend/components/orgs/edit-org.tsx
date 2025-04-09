@@ -9,7 +9,7 @@ import {
 } from "@/frontend/components/ui/form";
 import { Input } from "@/frontend/components/ui/input";
 import { useEditOrg } from "@/frontend/hooks/orgs";
-import { editOrgSchema } from "@/shared/validations/organization";
+import { editOrgSchema } from "@/shared/validations/organizations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit, Save, X } from "lucide-react";
 import { useState } from "react";
@@ -59,7 +59,13 @@ export default function EditOrg({ org }: CreateOrEditOrgProps) {
 								</FormItem>
 							)}
 						/>
-						<Button size="icon" variant="ghost" title="Update" type="submit">
+						<Button
+							size="icon"
+							variant="ghost"
+							title="Update"
+							type="submit"
+							data-testid="save-edit-org"
+						>
 							<Save className="h-4 w-4" />
 						</Button>
 						<Button
@@ -71,6 +77,7 @@ export default function EditOrg({ org }: CreateOrEditOrgProps) {
 							}}
 							title="Cancel"
 							type="button"
+							data-testid="cancel-edit-org"
 						>
 							<X className="h-4 w-4" />
 						</Button>

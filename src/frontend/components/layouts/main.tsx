@@ -21,11 +21,7 @@ export default function Layout({ children }: LayoutProps) {
 
 	return (
 		<SidebarProvider>
-			<AppSidebar
-				currentOrg={user.data.currentOrg}
-				orgs={userOrgsQuery.data?.orgs || []}
-				user={user.data}
-			/>
+			<AppSidebar orgs={userOrgsQuery.data?.orgs || []} user={user.data} />
 			<SidebarInset>
 				<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
 					<div className="flex items-center gap-2 px-4">

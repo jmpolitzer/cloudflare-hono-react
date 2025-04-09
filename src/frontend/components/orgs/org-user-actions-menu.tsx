@@ -41,7 +41,7 @@ export default function OrgUserActionsMenu({
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
+			<DropdownMenuTrigger asChild data-testid={`user-menu-${userId}`}>
 				<Button variant="ghost" className="h-8 w-8 p-0">
 					<span className="sr-only">Open menu</span>
 					<MoreHorizontal className="h-4 w-4" />
@@ -51,6 +51,7 @@ export default function OrgUserActionsMenu({
 				<DropdownMenuItem
 					disabled={userId === currentUserId}
 					onClick={handleRemoveUser}
+					data-testid={`remove-user-${userId}`}
 				>
 					Remove User
 				</DropdownMenuItem>

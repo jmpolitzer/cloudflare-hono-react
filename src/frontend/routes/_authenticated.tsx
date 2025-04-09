@@ -1,4 +1,4 @@
-import Login from "@/frontend/components/auth/login";
+import LoginOrRegister from "@/frontend/components/auth/login-or-register";
 import Layout from "@/frontend/components/layouts/main";
 import { Toaster } from "@/frontend/components/ui/sonner";
 import {
@@ -15,7 +15,7 @@ const Component = () => {
 	const { userOrgs, user } = Route.useRouteContext();
 
 	if (!user) {
-		return <Login />;
+		return <LoginOrRegister />;
 	}
 
 	/*
@@ -23,7 +23,7 @@ const Component = () => {
 		This can happen if a user is removed from an org by an admin.
 	*/
 	if (!userOrgs || !userOrgs.orgs) {
-		return <Login orgless />;
+		return <LoginOrRegister orgless />;
 	}
 
 	return (

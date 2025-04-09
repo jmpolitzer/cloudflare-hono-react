@@ -18,14 +18,22 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/frontend/components/ui/sidebar";
-import type { CurrentUser } from "@/frontend/hooks/users";
+import type { CurrentUser, UserOrgs } from "@/frontend/hooks/users";
 import { Link } from "@tanstack/react-router";
-import { BadgeCheck, ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
 
-export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
+export interface NavUserProps {
+	orgs: NonNullable<UserOrgs>["orgs"];
+	user: NonNullable<CurrentUser>;
+}
+
+export default function NavUser({ orgs, user }: NavUserProps) {
 	const { isMobile } = useSidebar();
 	const fullName = `${user.given_name ?? ""} ${user.family_name ?? ""}`;
 	const picture = user.picture ?? undefined;
+	const currentOrg = orgs.find((org) => org.id === user.currentOrg);
+
+	if (!currentOrg) return null;
 
 	return (
 		<SidebarMenu>
@@ -41,8 +49,18 @@ export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 								<AvatarFallback className="rounded-lg">CN</AvatarFallback>
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-semibold">{fullName}</span>
-								<span className="truncate text-xs">{user.email}</span>
+								<span
+									className="truncate font-semibold"
+									data-testid="current-user-name"
+								>
+									{fullName}
+								</span>
+								<span
+									className="truncate text-xs"
+									data-testid="current-user-org"
+								>
+									{currentOrg.name}
+								</span>
 							</div>
 							<ChevronsUpDown className="ml-auto size-4" />
 						</SidebarMenuButton>
@@ -61,7 +79,7 @@ export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
 									<span className="truncate font-semibold">{fullName}</span>
-									<span className="truncate text-xs">{user.email}</span>
+									<span className="truncate text-xs">{currentOrg.name}</span>
 								</div>
 							</div>
 						</DropdownMenuLabel>
@@ -69,7 +87,7 @@ export default function NavUser({ user }: { user: NonNullable<CurrentUser> }) {
 						<DropdownMenuGroup>
 							<DropdownMenuItem asChild>
 								<Link to="/settings">
-									<BadgeCheck />
+									<Settings />
 									Settings
 								</Link>
 							</DropdownMenuItem>

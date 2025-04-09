@@ -6,6 +6,7 @@ import type {
 import {
 	forbiddenRequestException,
 	unauthorizedRequestException,
+	unknownRequestException,
 } from "@/server/utils/errors";
 import type { KindeBindings, Variables } from "@/server/utils/kinde";
 import type {
@@ -18,12 +19,14 @@ import type {
 	SessionManager,
 } from "@kinde-oss/kinde-typescript-sdk";
 import type {
+	CreateOrganizationData,
 	GetOrganizationData,
 	GetOrganizationUsersData,
 	Organizations,
 	Roles,
 	Search,
 	Users,
+	create_organization_response,
 	get_organization_response,
 } from "@kinde/management-api-js";
 import type { Context, Next } from "hono";
@@ -42,6 +45,7 @@ export const mockKindeBindings: KindeBindings = {
 	KINDE_REDIRECT_URL: "http://localhost:8787/auth/callback",
 	KINDE_M2M_ID: "mock-m2m-id",
 	KINDE_M2M_SECRET: "mock-m2m-secret",
+	KINDE_CONNECTION_ID: "93901202029",
 };
 
 export interface MockKindeClientOptions {
@@ -347,6 +351,17 @@ export const mockOrganizations = {
 	deleteOrganizationUserRole: vi.fn(async ({ orgCode, userId, roleId }) => ({
 		success: true,
 	})),
+	createOrganization: vi.fn(
+		async ({
+			requestBody,
+		}: CreateOrganizationData): Promise<create_organization_response> => {
+			return {
+				organization: {
+					code: "new-org-id",
+				},
+			};
+		},
+	),
 	getOrganization: vi.fn(
 		async ({
 			code,
@@ -399,6 +414,62 @@ export const mockSearch = {
 		results: [],
 	}),
 } as unknown as typeof Search;
+
+// Mock registerUserToOrg
+export const mockRegisterUserToOrg = vi.fn(
+	async ({
+		orgId,
+		role,
+		user,
+	}: {
+		orgId: string;
+		role: "admin" | "basic";
+		user: { email: string; firstName: string; lastName: string } | string;
+	}) => {
+		try {
+			let userId: string | undefined;
+
+			if (typeof user === "string") {
+				userId = user;
+			} else {
+				const newUser = await mockUsers.createUser({
+					requestBody: {
+						profile: {
+							given_name: user.firstName,
+							family_name: user.lastName,
+						},
+						identities: [
+							{
+								type: "email",
+								details: {
+									email: user.email,
+								},
+							},
+						],
+					},
+				});
+				userId = newUser.id;
+			}
+
+			await mockOrganizations.addOrganizationUsers({
+				orgCode: orgId,
+				requestBody: {
+					users: [
+						{
+							id: userId,
+							roles: [role],
+						},
+					],
+				},
+			});
+
+			// Return undefined as the original function does
+			return;
+		} catch (error) {
+			throw unknownRequestException(error);
+		}
+	},
+);
 
 // Mock Resend emailer
 export const mockResendClient = {
