@@ -6,6 +6,9 @@ import {
 	mockEnsureUser,
 	mockGetKindeClient,
 	mockKindeBindings,
+	mockOrganizations,
+	mockRegisterUserToOrg,
+	mockSearch,
 	mockUnauthorizedError,
 } from "../vitest-setup";
 import type { MockKindeClientOptions } from "../vitest-setup";
@@ -15,6 +18,9 @@ describe("Auth API Tests", () => {
 		const auth = createAuthRoutes({
 			getKindeClient: mockGetKindeClient(authOptions),
 			ensureUser: mockEnsureUser,
+			registerUserToOrg: mockRegisterUserToOrg,
+			Organizations: mockOrganizations,
+			Search: mockSearch,
 		});
 		return new Hono()
 			.basePath("/api")
@@ -26,15 +32,21 @@ describe("Auth API Tests", () => {
 	it("GET /api/auth/login - should redirect to callback (unauthenticated)", async () => {
 		const app = setupApp({ isAuthenticated: false });
 
+		const formData = new FormData();
+		formData.append("email", "existinguser@example.com");
+
 		const res = await app.request(
 			"/api/auth/login",
-			{ method: "GET" },
+			{ method: "POST", body: formData },
 			mockKindeBindings,
 		);
-		expect(res.status).toBe(302);
-		expect(res.headers.get("location")).toBe(
-			"http://localhost:8787/auth/callback",
-		);
+
+		const data = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(data).toEqual({
+			redirectUrl: "http://localhost:8787/auth/callback",
+		});
 	});
 
 	it("GET /api/auth/login - should redirect even if authenticated", async () => {
@@ -50,30 +62,44 @@ describe("Auth API Tests", () => {
 			},
 		});
 
+		const formData = new FormData();
+		formData.append("email", "existinguser@example.com");
+
 		const res = await app.request(
 			"/api/auth/login",
-			{ method: "GET" },
+			{ method: "POST", body: formData },
 			mockKindeBindings,
 		);
-		expect(res.status).toBe(302);
-		expect(res.headers.get("location")).toBe(
-			"http://localhost:8787/auth/callback",
-		);
+
+		const data = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(data).toEqual({
+			redirectUrl: "http://localhost:8787/auth/callback",
+		});
 	});
 
 	// GET /api/auth/register
 	it("GET /api/auth/register - should redirect to callback (unauthenticated)", async () => {
 		const app = setupApp({ isAuthenticated: false });
 
+		const formData = new FormData();
+		formData.append("email", "newuser@example.com");
+		formData.append("firstName", "New");
+		formData.append("lastName", "User");
+
 		const res = await app.request(
 			"/api/auth/register",
-			{ method: "GET" },
+			{ method: "POST", body: formData },
 			mockKindeBindings,
 		);
-		expect(res.status).toBe(302);
-		expect(res.headers.get("location")).toBe(
-			"http://localhost:8787/auth/callback",
-		);
+
+		const data = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(data).toEqual({
+			redirectUrl: "http://localhost:8787/auth/callback",
+		});
 	});
 
 	// GET /api/auth/logout

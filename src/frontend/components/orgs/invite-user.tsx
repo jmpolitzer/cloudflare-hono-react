@@ -19,13 +19,13 @@ import {
 } from "@/frontend/components/ui/form";
 import { Input } from "@/frontend/components/ui/input";
 import { useInviteUserToOrg } from "@/frontend/hooks/orgs";
-import { inviteUserToOrgSchema } from "@/shared/validations/organization";
+import { registerUserSchema } from "@/shared/validations/users";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import type { InviteUserToOrgSchemaType } from "@/frontend/hooks/orgs";
+import type { RegisterUserSchemaType } from "@/frontend/hooks/users";
 
 interface InviteUserToOrgProps {
 	orgId: string;
@@ -39,8 +39,8 @@ export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 		isError,
 	} = useInviteUserToOrg(orgId);
 
-	const form = useForm<InviteUserToOrgSchemaType>({
-		resolver: zodResolver(inviteUserToOrgSchema),
+	const form = useForm<RegisterUserSchemaType>({
+		resolver: zodResolver(registerUserSchema),
 		defaultValues: {
 			email: "",
 			firstName: "",
@@ -48,7 +48,7 @@ export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 		},
 	});
 
-	async function onSubmit(values: InviteUserToOrgSchemaType) {
+	async function onSubmit(values: RegisterUserSchemaType) {
 		await inviteUserToOrgMutation(values);
 
 		if (dialogTriggerRef.current) {

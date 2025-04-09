@@ -9,7 +9,7 @@ import {
 } from "@/frontend/components/ui/form";
 import { Input } from "@/frontend/components/ui/input";
 import { useEditOrg } from "@/frontend/hooks/orgs";
-import { editOrgSchema } from "@/shared/validations/organization";
+import { editOrgSchema } from "@/shared/validations/organizations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit, Save, X } from "lucide-react";
 import { useState } from "react";

@@ -3,43 +3,13 @@ import { hc } from "hono/client";
 
 import type {
 	editOrgSchema,
-	inviteUserToOrgSchema,
 	updateOrgUserRolesSchema,
-} from "@/shared/validations/organization";
+} from "@/shared/validations/organizations";
 import type { AppType } from "@app-type";
 import type { InferRequestType, InferResponseType } from "hono";
 import type { z } from "zod";
 
 const client = hc<AppType>("/");
-
-export function useActivateOrg() {
-	const queryClient = useQueryClient();
-
-	return useMutation<
-		InferResponseType<(typeof client.api.orgs)[":orgId"]["activate"]["$post"]>,
-		Error,
-		InferRequestType<
-			(typeof client.api.orgs)[":orgId"]["activate"]["$post"]
-		>["param"]
-	>({
-		mutationFn: async ({ orgId }) => {
-			const res = await client.api.orgs[":orgId"].activate.$post({
-				param: { orgId },
-			});
-
-			if (!res.ok) {
-				throw new Error(res.statusText);
-			}
-
-			return await res.json();
-		},
-		onSettled: async () => {
-			return await queryClient.invalidateQueries({
-				queryKey: ["get-current-user"],
-			});
-		},
-	});
-}
 
 export function useEditOrg(orgId: string) {
 	const queryClient = useQueryClient();
@@ -187,7 +157,6 @@ export function useUpdateOrgUserRole({
 }
 
 export type EditOrgSchemaType = z.infer<typeof editOrgSchema>;
-export type InviteUserToOrgSchemaType = z.infer<typeof inviteUserToOrgSchema>;
 export type UpdateOrgUserRoleSchemaType = z.infer<
 	typeof updateOrgUserRolesSchema
 >;

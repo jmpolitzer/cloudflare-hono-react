@@ -3,7 +3,6 @@ import {
 	sendInviteUserToOrgEmail,
 } from "@/server/utils/email/resend";
 import {
-	badRequestException,
 	internalServerErrorRequestException,
 	unauthorizedRequestException,
 	unknownRequestException,
@@ -17,19 +16,19 @@ import {
 	initKindeApi as defaultInitKindeApi,
 	getKindeClient as defaultKindeClient,
 	refreshUser as defaultRefreshUser,
+	registerUserToOrg as defaultRegisterUserToOrg,
 	sessionManager,
 } from "@/server/utils/kinde";
 import type { KindeRouteBindings } from "@/server/utils/kinde";
 import {
 	editOrgSchema,
-	inviteUserToOrgSchema,
 	updateOrgUserRolesSchema,
-} from "@/shared/validations/organization";
+} from "@/shared/validations/organizations";
+import { registerUserSchema } from "@/shared/validations/users";
 import { zValidator } from "@hono/zod-validator";
 import {
 	Organizations as defaultOrganizations,
 	Search as defaultSearch,
-	Users as defaultUsers,
 } from "@kinde/management-api-js";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -43,9 +42,9 @@ export function createOrgsRoutes({
 	initKindeApi = defaultInitKindeApi,
 	refreshUser = defaultRefreshUser,
 	initResendEmailer = defaultInitResendEmailer,
+	registerUserToOrg = defaultRegisterUserToOrg,
 	Organizations = defaultOrganizations,
 	Search = defaultSearch,
-	Users = defaultUsers,
 }: KindeRouteBindings = {}) {
 	/* Create Hono app resource group with Cloudflare bindings */
 	const app = new Hono<{ Bindings: CloudflareBindings }>();
@@ -122,72 +121,12 @@ export function createOrgsRoutes({
 				throw unknownRequestException(error);
 			}
 		})
-		/* Create admin role for org owner. This allows for user invitations. */
-		.post("/:orgId/activate", ensureOrgAssociation, async (c) => {
-			const { orgId } = c.req.param();
-
-			try {
-				const orgUsers = await Organizations.getOrganizationUsers({
-					orgCode: orgId,
-				});
-
-				/* Fail if org has more than one user. The owner must be the only user. */
-				if ((orgUsers.organization_users || []).length > 1) {
-					throw badRequestException();
-				}
-
-				const foundOrgUser = (orgUsers.organization_users || []).find(
-					(user) => user.id === c.var.user.id,
-				);
-
-				/* Fail if user is not in the org. */
-				if (!foundOrgUser) {
-					throw badRequestException();
-				}
-
-				const userRoles = await Organizations.getOrganizationUserRoles({
-					orgCode: orgId,
-					userId: c.var.user.id,
-				});
-
-				/* Fail if user already has a role. */
-				if ((userRoles.roles || []).length > 0) {
-					throw badRequestException();
-				}
-
-				await Organizations.createOrganizationUserRole({
-					orgCode: orgId,
-					userId: c.var.user.id,
-					requestBody: {
-						role_id: (c.var.roles || []).find((role) => role.name === "admin")
-							?.id,
-					},
-				});
-
-				/* Refresh user claims */
-				await refreshUser({
-					userId: c.var.user.id,
-					kindeClient: c.var.kindeClient,
-					manager: sessionManager(c),
-				});
-
-				return c.json({
-					success: true,
-				});
-			} catch (error) {
-				if (error instanceof HTTPException) {
-					throw error;
-				}
-
-				throw unknownRequestException(error);
-			}
-		})
 		/* Invite User to Organization */
 		.post(
 			"/:orgId/invite",
 			ensureOrgAssociation,
 			ensureOrgAdmin,
-			zValidator("form", inviteUserToOrgSchema, (result, c) => {
+			zValidator("form", registerUserSchema, (result, c) => {
 				if (!result.success) {
 					throw zodBadRequestException(result.error);
 				}
@@ -202,64 +141,14 @@ export function createOrgsRoutes({
 						query: formData.email,
 					});
 
-					if (
-						existingUser.results?.[0] &&
-						existingUser.results[0].email === formData.email
-					) {
-						/* Add existing user back to org with basic role. */
-
-						if (!existingUser.results[0].id) {
-							throw internalServerErrorRequestException();
-						}
-
-						await Organizations.addOrganizationUsers({
-							orgCode: orgId,
-							requestBody: {
-								users: [
-									{
-										id: existingUser.results[0].id,
-										roles: ["basic"],
-									},
-								],
-							},
-						});
-					} else {
-						/* Create new user */
-						const newUser = await Users.createUser({
-							requestBody: {
-								organization_code: orgId,
-								profile: {
-									given_name: formData.firstName,
-									family_name: formData.lastName,
-								},
-								identities: [
-									{
-										type: "email",
-										details: {
-											email: formData.email,
-										},
-									},
-								],
-							},
-						});
-
-						const basicRole = (c.var.roles || []).find(
-							(role) => role.name === "basic",
-						);
-
-						if (!newUser.id || !basicRole || !basicRole.id) {
-							throw internalServerErrorRequestException();
-						}
-
-						/* Create default "basic" role */
-						await Organizations.createOrganizationUserRole({
-							orgCode: orgId,
-							userId: newUser.id,
-							requestBody: {
-								role_id: basicRole.id,
-							},
-						});
-					}
+					/* Invite existing user or create and invite new user. */
+					await registerUserToOrg({
+						orgId,
+						role: "basic",
+						user: existingUser.results?.[0]?.id
+							? existingUser.results[0].id
+							: formData,
+					});
 
 					/* Send email invitation to new org user. */
 					const orgLink = `${c.env.BASE_URL}/api/auth/login?org_code=${orgId}`;

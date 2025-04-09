@@ -6,7 +6,7 @@ import {
 	SelectValue,
 } from "@/frontend/components/ui/select";
 import { useUpdateOrgUserRole } from "@/frontend/hooks/orgs";
-import { updateOrgUserRolesSchema } from "@/shared/validations/organization";
+import { updateOrgUserRolesSchema } from "@/shared/validations/organizations";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 

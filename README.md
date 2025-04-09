@@ -27,6 +27,7 @@ Create Two Kinde Applications:
   - basic
   - Can component
   - ensureUser, ensureOrgAssociation, ensureOrgAdmin
+  - select custom sign-in and sign-up screens
 
 2. M2M for Management API
 

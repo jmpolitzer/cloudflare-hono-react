@@ -2,13 +2,11 @@ import { createOrgsRoutes } from "@/server/routes/orgs";
 import { errorHandler } from "@/server/utils/errors";
 import type {
 	CancelablePromise,
-	get_organizations_user_roles_response,
 	search_users_response,
 } from "@kinde/management-api-js";
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	mockBadRequestError,
 	mockEnsureOrgAdmin,
 	mockEnsureOrgAssociation,
 	mockEnsureUser,
@@ -20,6 +18,7 @@ import {
 	mockKindeBindings,
 	mockOrganizations,
 	mockRefreshUser,
+	mockRegisterUserToOrg,
 	mockRoles,
 	mockSearch,
 	mockUnauthorizedError,
@@ -40,6 +39,7 @@ describe("Orgs API Tests", () => {
 			getRoles: mockGetRoles,
 			refreshUser: mockRefreshUser,
 			initResendEmailer: mockInitResendEmailer,
+			registerUserToOrg: mockRegisterUserToOrg,
 			Organizations: mockOrganizations,
 			Roles: mockRoles,
 			Search: mockSearch,
@@ -227,86 +227,6 @@ describe("Orgs API Tests", () => {
 		expect(data).toMatchObject(mockForbiddenError);
 	});
 
-	it("POST /api/orgs/:orgId/activate - should assign admin role (authenticated user in org)", async () => {
-		const app = setupApp({
-			isAuthenticated: true,
-			user: { id: "mock-user-id", permissions: [], orgCode: "mock-org" },
-		});
-
-		const response = await app.request(
-			"/api/orgs/mock-org/activate",
-			{ method: "POST" },
-			mockKindeBindings,
-		);
-		const data = await response.json();
-
-		expect(response.status).toBe(200);
-		expect(data).toEqual({ success: true });
-	});
-
-	it("POST /api/orgs/:orgId/activate - should fail if not in org", async () => {
-		const app = setupApp({
-			isAuthenticated: true,
-			user: { id: "mock-user-id", permissions: [], orgCode: "other-org" },
-		});
-
-		const response = await app.request(
-			"/api/orgs/mock-org/activate",
-			{ method: "POST" },
-			mockKindeBindings,
-		);
-		const data = await response.json();
-
-		expect(response.status).toBe(401);
-		expect(data).toMatchObject(mockUnauthorizedError);
-	});
-
-	it("POST /api/orgs/:orgId/activate - should fail if user already has role", async () => {
-		// Mock getOrganizationUserRoles to return a role for the user
-		mockOrganizations.getOrganizationUserRoles = vi.fn(
-			async ({ orgCode, userId }) => {
-				return { roles: [{ id: "basic" }] }; // Match role ID from mockRoles
-			},
-		) as unknown as (data: {
-			orgCode: string;
-			userId: string;
-		}) => CancelablePromise<get_organizations_user_roles_response>;
-
-		const app = setupApp({
-			isAuthenticated: true,
-			user: { id: "mock-user-id", orgCode: "mock-org", permissions: [] },
-		});
-		const response = await app.request(
-			"/api/orgs/mock-org/activate",
-			{ method: "POST" },
-			mockKindeBindings,
-		);
-		const data = await response.json();
-		expect(response.status).toBe(400);
-		expect(data).toMatchObject(mockBadRequestError);
-	});
-
-	it("POST /api/orgs/:orgId/activate - should fail if org has multiple users", async () => {
-		// Add a second user to the org
-		mockOrganizations.addUser("mock-org", {
-			id: "other-user-id",
-			email: "otheruser@example.com",
-		});
-
-		const app = setupApp({
-			isAuthenticated: true,
-			user: { id: "mock-user-id", orgCode: "mock-org", permissions: [] },
-		});
-		const response = await app.request(
-			"/api/orgs/mock-org/activate",
-			{ method: "POST" },
-			mockKindeBindings,
-		);
-		const data = await response.json();
-		expect(response.status).toBe(400);
-		expect(data).toMatchObject(mockBadRequestError);
-	});
-
 	it("POST /api/orgs/:orgId/invite - should invite new user", async () => {
 		const app = setupApp({
 			isAuthenticated: true,
@@ -331,10 +251,16 @@ describe("Orgs API Tests", () => {
 		expect(response.status).toBe(200);
 		expect(data).toEqual({ success: true });
 		expect(mockUsers.createUser).toHaveBeenCalled();
-		expect(mockOrganizations.createOrganizationUserRole).toHaveBeenCalledWith({
+		expect(mockOrganizations.addOrganizationUsers).toHaveBeenCalledWith({
 			orgCode: "mock-org",
-			userId: "new-user-id",
-			requestBody: { role_id: "basic" },
+			requestBody: {
+				users: [
+					{
+						id: "new-user-id",
+						roles: ["basic"],
+					},
+				],
+			},
 		});
 	});
 
