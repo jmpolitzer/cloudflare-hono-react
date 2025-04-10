@@ -23,7 +23,7 @@ const Component = () => {
 		This can happen if a user is removed from an org by an admin.
 	*/
 	if (!userOrgs || !userOrgs.orgs) {
-		return <LoginOrRegister orgless />;
+		return <LoginOrRegister currentUser={user} />;
 	}
 
 	return (
