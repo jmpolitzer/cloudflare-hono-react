@@ -186,7 +186,7 @@ function LoginForm({ onBack }: FormProps) {
 						<FormItem>
 							<FormLabel>Email</FormLabel>
 							<FormControl>
-								<Input {...field} data-testId="login-email" />
+								<Input {...field} data-testid="login-email" />
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -229,6 +229,7 @@ function RegisterForm({ currentUser, onBack }: FormProps) {
 			email: currentUser ? currentUser.email : "",
 			firstName: currentUser ? currentUser.given_name : "",
 			lastName: currentUser ? currentUser.family_name : "",
+			orgName: "",
 		},
 	});
 
@@ -244,6 +245,19 @@ function RegisterForm({ currentUser, onBack }: FormProps) {
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 				<FormField
 					control={form.control}
+					name="orgName"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Organization Name</FormLabel>
+							<FormControl>
+								<Input {...field} data-testid="register-org-name" />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					control={form.control}
 					name="email"
 					render={({ field }) => (
 						<FormItem>
@@ -252,7 +266,7 @@ function RegisterForm({ currentUser, onBack }: FormProps) {
 								<Input
 									{...field}
 									className={currentUser ? readOnlyClasses : ""}
-									data-testId="register-email"
+									data-testid="register-email"
 									readOnly={Boolean(currentUser)}
 								/>
 							</FormControl>
@@ -270,7 +284,7 @@ function RegisterForm({ currentUser, onBack }: FormProps) {
 								<Input
 									{...field}
 									className={currentUser ? readOnlyClasses : ""}
-									data-testId="register-first-name"
+									data-testid="register-first-name"
 									readOnly={Boolean(currentUser)}
 								/>
 							</FormControl>
@@ -288,7 +302,7 @@ function RegisterForm({ currentUser, onBack }: FormProps) {
 								<Input
 									{...field}
 									className={currentUser ? readOnlyClasses : ""}
-									data-testId="register-last-name"
+									data-testid="register-last-name"
 									readOnly={Boolean(currentUser)}
 								/>
 							</FormControl>

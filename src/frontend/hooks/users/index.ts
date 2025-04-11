@@ -2,6 +2,7 @@ import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import { hc } from "hono/client";
 
 import type {
+	inviteUserSchema,
 	loginUserSchema,
 	registerUserSchema,
 } from "@/shared/validations/users";
@@ -85,7 +86,8 @@ export const useUserOrgs = (userId: string) => {
 	return useQuery(getUserOrgsQueryOptions(userId));
 };
 
-export type RegisterUserSchemaType = z.infer<typeof registerUserSchema>;
+export type InviteUserSchemaType = z.infer<typeof inviteUserSchema>;
 export type LoginUserSchemaType = z.infer<typeof loginUserSchema>;
+export type RegisterUserSchemaType = z.infer<typeof registerUserSchema>;
 export type CurrentUser = ReturnType<typeof useCurrentUser>["data"];
 export type UserOrgs = ReturnType<typeof useUserOrgs>["data"];

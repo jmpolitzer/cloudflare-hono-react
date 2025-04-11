@@ -11,7 +11,6 @@ import {
 	sessionManager,
 } from "@/server/utils/kinde";
 import type { KindeRouteBindings } from "@/server/utils/kinde";
-import { DEFAULT_ORG_NAME } from "@/shared/constants";
 import {
 	loginUserSchema,
 	registerUserSchema,
@@ -87,7 +86,7 @@ export function createAuthRoutes({
 					/* Create new org */
 					const newOrg = await Organizations.createOrganization({
 						requestBody: {
-							name: DEFAULT_ORG_NAME,
+							name: formData.orgName,
 							is_allow_registrations: true,
 						},
 					});

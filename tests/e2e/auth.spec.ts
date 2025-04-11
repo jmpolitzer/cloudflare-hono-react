@@ -22,6 +22,14 @@ test.describe("Authentication", () => {
 		);
 	});
 
+	test("should see validation errors on login form", async ({ page }) => {
+		await setupMocks({ page, authenticated: false });
+		await page.goto("/");
+		await page.getByTestId("login-button").click();
+		await page.getByRole("button", { name: "Sign In" }).click();
+		await expect(page.getByText("Email is required")).toBeVisible();
+	});
+
 	test("should be able to login as an existing user", async ({ page }) => {
 		await setupMocks({ page, authenticated: false });
 		await page.goto("/");
@@ -37,6 +45,19 @@ test.describe("Authentication", () => {
 		);
 	});
 
+	test("should see validation errors on registration form", async ({
+		page,
+	}) => {
+		await setupMocks({ page, authenticated: false });
+		await page.goto("/");
+		await page.getByTestId("register-button").click();
+		await page.getByRole("button", { name: "Create Account" }).click();
+		await expect(page.getByText("Organization name is required")).toBeVisible();
+		await expect(page.getByText("Email is required")).toBeVisible();
+		await expect(page.getByText("First name is required")).toBeVisible();
+		await expect(page.getByText("Last name is required")).toBeVisible();
+	});
+
 	test("should be able to register as a new user", async ({ page }) => {
 		const newUser = {
 			id: "new-user-id",
@@ -49,24 +70,32 @@ test.describe("Authentication", () => {
 		};
 
 		await setupMocks({ page, authenticated: false });
-
 		await page.goto("/");
 		await page.getByTestId("register-button").click();
+		await page.getByTestId("register-org-name").fill("New Org");
 		await page.getByTestId("register-email").fill(newUser.email);
 		await page.getByTestId("register-first-name").fill(newUser.given_name);
 		await page.getByTestId("register-last-name").fill(newUser.family_name);
 		await page.getByRole("button", { name: "Create Account" }).click();
 
 		await setupMocks({ page, currentUser: newUser });
-
 		await page.goto("/");
-
 		await expect(page.getByTestId("current-user-name")).toHaveText(
 			`${newUser.given_name} ${newUser.family_name}`,
 		);
 		await expect(page.getByTestId("dashboard-breadcrumb")).toHaveText(
 			"Dashboard",
 		);
+	});
+
+	test("should see validation errors on re-registration form", async ({
+		page,
+	}) => {
+		await setupMocks({ page, authenticated: false });
+		await page.goto("/");
+		await page.getByTestId("register-button").click();
+		await page.getByRole("button", { name: "Create Account" }).click();
+		await expect(page.getByText("Organization name is required")).toBeVisible();
 	});
 
 	test("should be able to re-register as an orgless user", async ({ page }) => {
@@ -87,6 +116,7 @@ test.describe("Authentication", () => {
 			"Register to regain access",
 		);
 		await page.getByTestId("register-button").click();
+		await page.getByTestId("register-org-name").fill("New Org");
 		await expect(page.getByTestId("register-email")).toHaveValue(
 			orglessUser.email,
 		);
