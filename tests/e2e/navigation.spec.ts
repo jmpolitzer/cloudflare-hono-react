@@ -3,7 +3,7 @@ import { setupMocks } from "../playwright-setup";
 
 test.describe("Navigation", () => {
 	test.beforeEach(async ({ page }) => {
-		await setupMocks(page);
+		await setupMocks({ page });
 	});
 
 	test("should navigate between main sections", async ({ page }) => {

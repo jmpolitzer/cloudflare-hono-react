@@ -3,7 +3,7 @@ import { setupMocks } from "../playwright-setup";
 
 test.describe("Settings", () => {
 	test.beforeEach(async ({ page }) => {
-		await setupMocks(page);
+		await setupMocks({ page });
 		await page.goto("/settings");
 	});
 

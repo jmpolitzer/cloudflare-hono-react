@@ -186,7 +186,7 @@ function LoginForm({ onBack }: FormProps) {
 						<FormItem>
 							<FormLabel>Email</FormLabel>
 							<FormControl>
-								<Input {...field} />
+								<Input {...field} data-testId="login-email" />
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -252,6 +252,7 @@ function RegisterForm({ currentUser, onBack }: FormProps) {
 								<Input
 									{...field}
 									className={currentUser ? readOnlyClasses : ""}
+									data-testId="register-email"
 									readOnly={Boolean(currentUser)}
 								/>
 							</FormControl>
@@ -269,6 +270,7 @@ function RegisterForm({ currentUser, onBack }: FormProps) {
 								<Input
 									{...field}
 									className={currentUser ? readOnlyClasses : ""}
+									data-testId="register-first-name"
 									readOnly={Boolean(currentUser)}
 								/>
 							</FormControl>
@@ -286,6 +288,7 @@ function RegisterForm({ currentUser, onBack }: FormProps) {
 								<Input
 									{...field}
 									className={currentUser ? readOnlyClasses : ""}
+									data-testId="register-last-name"
 									readOnly={Boolean(currentUser)}
 								/>
 							</FormControl>

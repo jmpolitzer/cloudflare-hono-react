@@ -1,34 +1,81 @@
+import type { CurrentUser } from "@/frontend/hooks/users";
 import type { Page } from "@playwright/test";
 
-export async function setupMocks(page: Page) {
-	await page.route("/api/auth/me", (route) => {
+interface PlaywrightMocks {
+	page: Page;
+	authenticated?: boolean;
+	currentUser?: CurrentUser;
+	orgs?: boolean;
+}
+
+export async function setupMocks({
+	page,
+	authenticated = true,
+	currentUser,
+	orgs = true,
+}: PlaywrightMocks) {
+	await page.route("/api/auth/register", (route) => {
 		route.fulfill({
 			status: 200,
 			contentType: "application/json",
 			body: JSON.stringify({
-				id: "mock-user-id",
-				email: "mockuser@example.com",
-				given_name: "Mock",
-				family_name: "User",
-				picture: "mock-picture",
-				currentOrg: "mock-org",
-				permissions: ["manage:org"],
+				redirectUrl: "http://localhost:5173/api/auth/callback",
 			}),
 		});
 	});
 
-	await page.route("/api/users/mock-user-id/orgs", (route) => {
+	await page.route("/api/auth/callback", (route) => {
+		route.fulfill({
+			status: 302,
+			contentType: "application/json",
+		});
+	});
+
+	await page.route("/api/auth/logout", (route) => {
+		route.fulfill({
+			status: 302,
+			contentType: "application/json",
+		});
+	});
+
+	await page.route("/api/auth/me", (route) => {
+		route.fulfill({
+			status: authenticated ? 200 : 401,
+			contentType: "application/json",
+			body: JSON.stringify(
+				authenticated
+					? (currentUser ?? {
+							id: "mock-user-id",
+							email: "mockuser@example.com",
+							given_name: "Mock",
+							family_name: "User",
+							picture: "mock-picture",
+							currentOrg: "mock-org",
+							permissions: ["manage:org"],
+						})
+					: {
+							status: 401,
+						},
+			),
+		});
+	});
+
+	await page.route("/api/users/*/orgs", (route) => {
 		route.fulfill({
 			status: 200,
 			contentType: "application/json",
-			body: JSON.stringify({
-				orgs: [
-					{
-						name: "Mock Org",
-						id: "mock-org",
-					},
-				],
-			}),
+			body: JSON.stringify(
+				orgs
+					? {
+							orgs: [
+								{
+									name: "Mock Org",
+									id: "mock-org",
+								},
+							],
+						}
+					: null,
+			),
 		});
 	});
 
