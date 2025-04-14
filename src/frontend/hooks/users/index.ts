@@ -39,14 +39,22 @@ export function useRegisterUser() {
 }
 
 export function useLoginUser() {
+	const queryClient = useQueryClient();
+
 	return useMutation<
 		InferResponseType<typeof client.api.auth.login.$post>,
 		Error,
 		InferRequestType<typeof client.api.auth.login.$post>["form"]
 	>({
 		mutationFn: async (loginUserForm) => {
+			const { orgId, ...rest } = loginUserForm;
 			const res = await client.api.auth.login.$post({
-				form: loginUserForm,
+				form: rest,
+				...(orgId && {
+					query: {
+						org_code: orgId,
+					},
+				}),
 			});
 
 			if (!res.ok) {

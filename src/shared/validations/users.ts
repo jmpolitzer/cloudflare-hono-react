@@ -5,6 +5,7 @@ export const loginUserSchema = z.object({
 		.string()
 		.min(1, "Email is required")
 		.email("This is not a valid email"),
+	orgId: z.string().optional(),
 });
 
 export const editUserSchema = z.object({

@@ -1,3 +1,5 @@
+import OrganizationSwitcher from "@/frontend/components/orgs/org-switcher";
+import Can from "@/frontend/components/rbac/can";
 import OrganizationSection from "@/frontend/components/settings/organization";
 import ProfileSection from "@/frontend/components/settings/profile";
 import { Avatar, AvatarFallback } from "@/frontend/components/ui/avatar";
@@ -8,6 +10,7 @@ import {
 	CardTitle,
 } from "@/frontend/components/ui/card";
 import { useCurrentUser, useUserOrgs } from "@/frontend/hooks/users";
+import { MANAGE_ORG } from "@/shared/constants";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/_authenticated/settings")({
@@ -40,7 +43,7 @@ function AccountComponent() {
 
 	return (
 		<Card className="mx-auto w-full max-w-3xl">
-			<CardHeader className="pb-3">
+			<CardHeader className="flex justify-between pb-3 md:flex-row">
 				<div className="flex items-center gap-4">
 					<Avatar className="h-16 w-16">
 						{/* <AvatarImage src={avatarUrl || ""} alt={userName || userEmail} /> */}
@@ -55,13 +58,22 @@ function AccountComponent() {
 						</CardDescription>
 					</div>
 				</div>
+				{userOrgsQuery.data.orgs.length > 1 && (
+					<OrganizationSwitcher
+						currentOrg={currentOrg.id}
+						currentUser={currentUser.data}
+						orgs={userOrgsQuery.data.orgs}
+					/>
+				)}
 			</CardHeader>
 			<ProfileSection currentUser={currentUser.data} />
-			<OrganizationSection
-				currentOrg={currentOrg}
-				currentUser={currentUser.data}
-				orgs={userOrgsQuery.data.orgs}
-			/>
+			<Can action={MANAGE_ORG} permissions={currentUser.data.permissions}>
+				<OrganizationSection
+					currentOrg={currentOrg}
+					currentUser={currentUser.data}
+					orgs={userOrgsQuery.data.orgs}
+				/>
+			</Can>
 		</Card>
 	);
 }
