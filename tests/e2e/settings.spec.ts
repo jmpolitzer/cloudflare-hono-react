@@ -9,7 +9,7 @@ test.describe("Settings", () => {
 
 	test("should update organization name", async ({ page }) => {
 		// Click edit button
-		await page.getByRole("button", { name: "Edit" }).click();
+		await page.getByTestId("edit-org").click();
 
 		// Fill in new name
 		const nameInput = page.locator("[name=name]");

@@ -1,3 +1,4 @@
+import EditButton from "@/frontend/components/buttons/edit-button";
 import AlertError from "@/frontend/components/errors/alert-error";
 import { Button } from "@/frontend/components/ui/button";
 import {
@@ -11,7 +12,7 @@ import { Input } from "@/frontend/components/ui/input";
 import { useEditOrg } from "@/frontend/hooks/orgs";
 import { editOrgSchema } from "@/shared/validations/organizations";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Edit, Save, X } from "lucide-react";
+import { Save, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -86,16 +87,10 @@ export default function EditOrg({ org }: CreateOrEditOrgProps) {
 			) : (
 				<div className="flex items-center justify-between">
 					<span className="text-muted-foreground text-sm">{org.name}</span>
-					<Button
-						size="sm"
-						variant="ghost"
-						className="h-8 px-2"
+					<EditButton
+						data-testid="edit-org"
 						onClick={() => setIsEditing(true)}
-						type="button"
-					>
-						<Edit className="mr-1 h-3.5 w-3.5" />
-						Edit
-					</Button>
+					/>
 				</div>
 			)}
 		</Form>

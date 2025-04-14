@@ -49,7 +49,9 @@ export function createOrgsRoutes({
 	/* Create Hono app resource group with Cloudflare bindings */
 	const app = new Hono<{ Bindings: CloudflareBindings }>();
 	const orgs = app
+		/* This middleware is used to get the Kinde client. This must be listed first to use ensureUser. */
 		.use(getKindeClient)
+		/* This middleware is used to check if the current user is authenticated. */
 		.use(ensureUser)
 		/* Inits the Kinde management API (Organizations, Users, etc.) */
 		.use(initKindeApi)

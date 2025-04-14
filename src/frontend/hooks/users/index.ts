@@ -1,7 +1,13 @@
-import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
+import {
+	queryOptions,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { hc } from "hono/client";
 
 import type {
+	editUserSchema,
 	inviteUserSchema,
 	loginUserSchema,
 	registerUserSchema,
@@ -52,6 +58,34 @@ export function useLoginUser() {
 	});
 }
 
+export function useEditUser(userId: string) {
+	const queryClient = useQueryClient();
+
+	return useMutation<
+		InferResponseType<(typeof client.api.users)[":userId"]["$patch"]>,
+		Error,
+		InferRequestType<(typeof client.api.users)[":userId"]["$patch"]>["form"]
+	>({
+		mutationFn: async (userForm) => {
+			const res = await client.api.users[":userId"].$patch({
+				param: { userId },
+				form: userForm,
+			});
+
+			if (!res.ok) {
+				throw new Error(res.statusText);
+			}
+
+			return await res.json();
+		},
+		onSettled: async () => {
+			return await queryClient.invalidateQueries({
+				queryKey: ["get-current-user"],
+			});
+		},
+	});
+}
+
 export const getCurrentUserQueryOptions = queryOptions({
 	queryKey: ["get-current-user"],
 	queryFn: async () => {
@@ -74,8 +108,8 @@ export const getUserOrgsQueryOptions = (userId: string) =>
 	queryOptions({
 		queryKey: ["user-orgs"],
 		queryFn: async () => {
-			const res = await client.api.users[":id"].orgs.$get({
-				param: { id: userId },
+			const res = await client.api.users[":userId"].orgs.$get({
+				param: { userId },
 			});
 
 			return await res.json();
@@ -86,6 +120,7 @@ export const useUserOrgs = (userId: string) => {
 	return useQuery(getUserOrgsQueryOptions(userId));
 };
 
+export type EditUserSchemaType = z.infer<typeof editUserSchema>;
 export type InviteUserSchemaType = z.infer<typeof inviteUserSchema>;
 export type LoginUserSchemaType = z.infer<typeof loginUserSchema>;
 export type RegisterUserSchemaType = z.infer<typeof registerUserSchema>;

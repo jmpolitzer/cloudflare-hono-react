@@ -56,7 +56,7 @@ function AccountComponent() {
 					</div>
 				</div>
 			</CardHeader>
-			<ProfileSection userEmail={currentUser.data.email} />
+			<ProfileSection currentUser={currentUser.data} />
 			<OrganizationSection
 				currentOrg={currentOrg}
 				currentUser={currentUser.data}
