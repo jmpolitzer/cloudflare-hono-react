@@ -406,6 +406,9 @@ export const mockUsers = {
 		email: requestBody.identities[0].details.email,
 	})),
 	refreshUserClaims: async ({ userId }: { userId: string }) => undefined,
+	updateUser: vi.fn(async ({ id, requestBody }) => {
+		return {};
+	}),
 } as unknown as typeof Users;
 
 // Mock Search API

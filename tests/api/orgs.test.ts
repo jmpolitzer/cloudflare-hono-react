@@ -29,9 +29,9 @@ import type { MockKindeClientOptions } from "../vitest-setup";
 
 describe("Orgs API Tests", () => {
 	// Helper to create app with configurable auth options
-	const setupApp = (authOptions?: MockKindeClientOptions) => {
+	const setupApp = (orgsOptions?: MockKindeClientOptions) => {
 		const orgs = createOrgsRoutes({
-			getKindeClient: mockGetKindeClient(authOptions),
+			getKindeClient: mockGetKindeClient(orgsOptions),
 			ensureUser: mockEnsureUser,
 			ensureOrgAdmin: mockEnsureOrgAdmin,
 			ensureOrgAssociation: mockEnsureOrgAssociation,
