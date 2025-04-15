@@ -82,4 +82,53 @@ test.describe("Settings", () => {
 		// Verify error message
 		await expect(page.getByText("This is not a valid email")).toBeVisible();
 	});
+
+	test("should update user first and last name", async ({ page }) => {
+		// Click edit button
+		await page.getByTestId("edit-user").click();
+
+		// Fill in new name
+		const firstNameInput = page.locator("[name=firstName]");
+		await firstNameInput.clear();
+		await firstNameInput.fill("New");
+		const lastNameInput = page.locator("[name=lastName]");
+		await lastNameInput.clear();
+		await lastNameInput.fill("Name");
+
+		// Submit form
+		await page.getByTestId("save-edit-user").click();
+
+		// Verify success message
+		await expect(page.getByText("Updated successfully")).toBeVisible();
+	});
+
+	test("should validate missing first and last name", async ({ page }) => {
+		// Click edit button
+		await page.getByTestId("edit-user").click();
+
+		// Clear fields
+		const firstNameInput = page.locator("[name=firstName]");
+		await firstNameInput.clear();
+		const lastNameInput = page.locator("[name=lastName]");
+		await lastNameInput.clear();
+
+		// Submit form
+		await page.getByTestId("save-edit-user").click();
+
+		// Verify validation messages
+		expect(page.getByText("First name is required")).toBeTruthy();
+		expect(page.getByText("Last name is required")).toBeTruthy();
+	});
+
+	test("should be able to switch orgs if a user belongs to more than one", async ({
+		page,
+	}) => {});
+
+	test("should not be able to switch orgs if a user belongs to only one", async ({
+		page,
+	}) => {});
+
+	test("should see org settings as org admin", async ({ page }) => {});
+
+	test("should not see org settings as org basic", async ({ page }) => {});
 });

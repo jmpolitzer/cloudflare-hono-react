@@ -188,4 +188,12 @@ export async function setupMocks({
 			});
 		},
 	);
+
+	await page.route("/api/users/mock-user-id", (route) => {
+		route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify({ success: true }),
+		});
+	});
 }

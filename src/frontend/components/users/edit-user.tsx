@@ -61,7 +61,7 @@ export default function EditUser({ currentUser }: EditUserProps) {
 	return (
 		<Dialog>
 			<div className="flex justify-end pt-4">
-				<DialogTrigger asChild>
+				<DialogTrigger asChild data-testid="edit-user">
 					<EditButton ref={dialogTriggerRef} />
 				</DialogTrigger>
 			</div>
@@ -102,6 +102,7 @@ export default function EditUser({ currentUser }: EditUserProps) {
 							)}
 						/>
 						<LoadingButton
+							data-testid="save-edit-user"
 							label="Submit"
 							isLoading={form.formState.isSubmitting}
 							type="submit"

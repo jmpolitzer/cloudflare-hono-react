@@ -13,9 +13,10 @@ export default function LoadingButton({
 	label,
 	onClick,
 	type = "button",
+	...rest
 }: LoadingButtonProps) {
 	return (
-		<Button onClick={onClick} type={type}>
+		<Button onClick={onClick} type={type} {...rest}>
 			{isLoading ? <LoaderIcon className="animate-spin" /> : label}
 		</Button>
 	);
