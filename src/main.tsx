@@ -1,3 +1,4 @@
+import NotFound from "@/frontend/components/not-found";
 import { ThemeProvider } from "@/frontend/components/theme/provider";
 import { routeTree } from "@/frontend/routeTree.gen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,7 +13,11 @@ declare module "@tanstack/react-router" {
 }
 
 const queryClient = new QueryClient();
-const router = createRouter({ routeTree, context: { queryClient } });
+const router = createRouter({
+	routeTree,
+	context: { queryClient },
+	defaultNotFoundComponent: () => <NotFound />,
+});
 const rootElement = document.getElementById("root");
 
 if (!rootElement?.innerHTML) {
