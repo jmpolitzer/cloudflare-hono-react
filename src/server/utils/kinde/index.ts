@@ -37,7 +37,6 @@ export interface KindeBindings {
 	KINDE_AUTH_DOMAIN: string;
 	KINDE_CLIENT_ID: string;
 	KINDE_CLIENT_SECRET: string;
-	KINDE_REDIRECT_URL: string;
 	KINDE_M2M_ID: string;
 	KINDE_M2M_SECRET: string;
 	KINDE_CONNECTION_ID: string;
@@ -90,9 +89,9 @@ const initKindeClient = (bindings: KindeBindings) =>
 		clientId: bindings.KINDE_CLIENT_ID!,
 		clientSecret: bindings.KINDE_CLIENT_SECRET,
 		// biome-ignore lint/style/noNonNullAssertion: Needed with strict:true
-		redirectURL: bindings.KINDE_REDIRECT_URL!,
+		redirectURL: `${bindings.BASE_URL!}/api/auth/callback`,
 		// biome-ignore lint/style/noNonNullAssertion: Needed with strict:true
-		logoutRedirectURL: bindings.BASE_URL!,
+		logoutRedirectURL: `${bindings.BASE_URL!}/login`,
 	});
 
 export const getKindeClient: MiddlewareHandler<{

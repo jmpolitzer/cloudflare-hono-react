@@ -112,10 +112,12 @@ export const useCurrentUser = () => {
 	return useQuery(getCurrentUserQueryOptions);
 };
 
-export const getUserOrgsQueryOptions = (userId: string) =>
+export const getUserOrgsQueryOptions = (userId?: string) =>
 	queryOptions({
 		queryKey: ["user-orgs"],
 		queryFn: async () => {
+			if (!userId) throw new Error("Missing user id");
+
 			const res = await client.api.users[":userId"].orgs.$get({
 				param: { userId },
 			});
@@ -124,7 +126,7 @@ export const getUserOrgsQueryOptions = (userId: string) =>
 		},
 	});
 
-export const useUserOrgs = (userId: string) => {
+export const useUserOrgs = (userId?: string) => {
 	return useQuery(getUserOrgsQueryOptions(userId));
 };
 

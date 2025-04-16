@@ -122,13 +122,56 @@ test.describe("Settings", () => {
 
 	test("should be able to switch orgs if a user belongs to more than one", async ({
 		page,
-	}) => {});
+	}) => {
+		await setupMocks({
+			page,
+			orgs: {
+				orgs: [
+					{
+						id: "mock-org",
+						name: "Mock Org",
+					},
+					{
+						id: "mock-org-1",
+						name: "Mock Org 1",
+					},
+				],
+			},
+		});
+
+		await page.getByTestId("org-switcher").click();
+
+		expect(page.getByTestId("org-mock-org-1")).toBeTruthy();
+		expect(page.getByTestId("org-mock-org-21")).toBeTruthy();
+	});
 
 	test("should not be able to switch orgs if a user belongs to only one", async ({
 		page,
-	}) => {});
+	}) => {
+		await expect(page.getByTestId("edit-user")).toBeInViewport();
+		await expect(page.getByTestId("org-switcher")).not.toBeInViewport();
+	});
 
-	test("should see org settings as org admin", async ({ page }) => {});
+	test("should see org settings as org admin", async ({ page }) => {
+		await expect(
+			page.getByRole("heading", { name: "Organization Information " }),
+		).toBeInViewport();
+	});
 
-	test("should not see org settings as org basic", async ({ page }) => {});
+	test("should not see org settings as org basic", async ({ page }) => {
+		const basicUser = {
+			id: "basic-user-id",
+			email: "basicsuser@example.com",
+			given_name: "Basic",
+			family_name: "User",
+			picture: "mock-picture",
+			currentOrg: "mock-org",
+			permissions: [],
+		};
+
+		await setupMocks({ page, currentUser: basicUser });
+		await expect(
+			page.getByRole("heading", { name: "Organization Information " }),
+		).not.toBeInViewport();
+	});
 });

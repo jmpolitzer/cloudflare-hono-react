@@ -55,7 +55,7 @@ export default function OrganizationSwitcher({
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
+			<DialogTrigger asChild data-testid="org-switcher">
 				<Button
 					variant="outline"
 					// biome-ignore lint/a11y/useSemanticElements: using combobox
@@ -80,6 +80,7 @@ export default function OrganizationSwitcher({
 									key={organization.id}
 									onSelect={() => selectOrganization(organization)}
 									className="text-sm"
+									data-testid={`org-${organization.id}`}
 								>
 									{organization.name}
 									{activeOrg.id === organization.id && (

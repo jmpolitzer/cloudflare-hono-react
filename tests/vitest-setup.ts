@@ -42,7 +42,6 @@ export const mockKindeBindings: KindeBindings = {
 	KINDE_AUTH_DOMAIN: "https://mock.kinde.com",
 	KINDE_CLIENT_ID: "mock-client-id",
 	KINDE_CLIENT_SECRET: "mock-client-secret",
-	KINDE_REDIRECT_URL: "http://localhost:8787/auth/callback",
 	KINDE_M2M_ID: "mock-m2m-id",
 	KINDE_M2M_SECRET: "mock-m2m-secret",
 	KINDE_CONNECTION_ID: "93901202029",

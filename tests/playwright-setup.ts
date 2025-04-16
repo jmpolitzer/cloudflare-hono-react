@@ -1,19 +1,38 @@
-import type { CurrentUser } from "@/frontend/hooks/users";
+import type { CurrentUser, UserOrgs } from "@/frontend/hooks/users";
 import type { Page } from "@playwright/test";
 
 interface PlaywrightMocks {
 	page: Page;
 	authenticated?: boolean;
 	currentUser?: CurrentUser;
-	orgs?: boolean;
+	orgs?: UserOrgs | null;
 }
+
+const defaultOrgs = {
+	orgs: [
+		{
+			name: "Mock Org",
+			id: "mock-org",
+		},
+	],
+};
 
 export async function setupMocks({
 	page,
 	authenticated = true,
 	currentUser,
-	orgs = true,
+	orgs = defaultOrgs,
 }: PlaywrightMocks) {
+	await page.route("/api/auth/login", (route) => {
+		route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify({
+				redirectUrl: "http://localhost:5173/api/auth/callback",
+			}),
+		});
+	});
+
 	await page.route("/api/auth/register", (route) => {
 		route.fulfill({
 			status: 200,
@@ -64,18 +83,7 @@ export async function setupMocks({
 		route.fulfill({
 			status: 200,
 			contentType: "application/json",
-			body: JSON.stringify(
-				orgs
-					? {
-							orgs: [
-								{
-									name: "Mock Org",
-									id: "mock-org",
-								},
-							],
-						}
-					: null,
-			),
+			body: JSON.stringify(orgs ?? null),
 		});
 	});
 

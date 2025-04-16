@@ -135,7 +135,7 @@ export function createAuthRoutes({
 					new URL(c.req.url),
 				);
 
-				return c.redirect("/");
+				return c.redirect("/dashboard");
 			} catch (error) {
 				throw unknownRequestException(error);
 			}

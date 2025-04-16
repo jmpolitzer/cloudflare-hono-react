@@ -14,9 +14,9 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
 	const user = useCurrentUser();
-	if (!user.data) return null;
+	const userOrgsQuery = useUserOrgs(user?.data?.id);
 
-	const userOrgsQuery = useUserOrgs(user.data.id);
+	if (!user.data) return null;
 	if (!userOrgsQuery.data) return null;
 
 	return (

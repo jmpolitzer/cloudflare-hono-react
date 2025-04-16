@@ -39,7 +39,7 @@ type AuthView = "main" | "login" | "register";
 
 export default function LoginOrRegister({
 	currentUser,
-}: { currentUser?: CurrentUser }) {
+}: { currentUser: CurrentUser | null }) {
 	const [view, setView] = useState<AuthView>("main");
 
 	return (
@@ -125,7 +125,9 @@ export default function LoginOrRegister({
 						</>
 					)}
 
-					{view === "login" && <LoginForm onBack={() => setView("main")} />}
+					{view === "login" && (
+						<LoginForm currentUser={null} onBack={() => setView("main")} />
+					)}
 
 					{view === "register" && (
 						<RegisterForm
@@ -155,7 +157,7 @@ export default function LoginOrRegister({
 }
 
 interface FormProps {
-	currentUser?: CurrentUser;
+	currentUser: CurrentUser | null;
 	onBack: () => void;
 }
 

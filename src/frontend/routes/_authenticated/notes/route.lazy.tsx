@@ -11,7 +11,7 @@ import { useState } from "react";
 
 import type { NotesType } from "@/frontend/hooks/notes";
 
-export const Route = createLazyFileRoute("/_authenticated/notes/")({
+export const Route = createLazyFileRoute("/_authenticated/notes")({
 	component: Notes,
 });
 

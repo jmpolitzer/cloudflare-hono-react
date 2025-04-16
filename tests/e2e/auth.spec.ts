@@ -7,14 +7,14 @@ test.describe("Authentication", () => {
 	}) => {
 		await setupMocks({ page, authenticated: false });
 
-		await page.goto("/");
+		await page.goto("/login");
 		await expect(page.getByTestId("login-button")).toContainText("Login");
 		await expect(page.getByTestId("register-button")).toContainText("Create");
 	});
 
 	test("should show user profile when authenticated", async ({ page }) => {
 		await setupMocks({ page });
-		await page.goto("/");
+		await page.goto("/dashboard");
 		await expect(page.getByTestId("current-user-name")).toHaveText("Mock User");
 		await expect(page.getByTestId("current-user-org")).toHaveText("Mock Org");
 		await expect(page.getByTestId("dashboard-breadcrumb")).toHaveText(
@@ -24,7 +24,7 @@ test.describe("Authentication", () => {
 
 	test("should see validation errors on login form", async ({ page }) => {
 		await setupMocks({ page, authenticated: false });
-		await page.goto("/");
+		await page.goto("/login");
 		await page.getByTestId("login-button").click();
 		await page.getByRole("button", { name: "Sign In" }).click();
 		await expect(page.getByText("Email is required")).toBeVisible();
@@ -32,13 +32,13 @@ test.describe("Authentication", () => {
 
 	test("should be able to login as an existing user", async ({ page }) => {
 		await setupMocks({ page, authenticated: false });
-		await page.goto("/");
+		await page.goto("/login");
 		await page.getByTestId("login-button").click();
 		await page.getByTestId("login-email").fill("mockuser@example.com");
 		await page.getByRole("button", { name: "Sign In" }).click();
 
 		await setupMocks({ page });
-		await page.goto("/");
+		await page.goto("/dashboard");
 		await expect(page.getByTestId("current-user-name")).toHaveText("Mock User");
 		await expect(page.getByTestId("dashboard-breadcrumb")).toHaveText(
 			"Dashboard",
@@ -49,7 +49,7 @@ test.describe("Authentication", () => {
 		page,
 	}) => {
 		await setupMocks({ page, authenticated: false });
-		await page.goto("/");
+		await page.goto("/login");
 		await page.getByTestId("register-button").click();
 		await page.getByRole("button", { name: "Create Account" }).click();
 		await expect(page.getByText("Organization name is required")).toBeVisible();
@@ -70,7 +70,7 @@ test.describe("Authentication", () => {
 		};
 
 		await setupMocks({ page, authenticated: false });
-		await page.goto("/");
+		await page.goto("/login");
 		await page.getByTestId("register-button").click();
 		await page.getByTestId("register-org-name").fill("New Org");
 		await page.getByTestId("register-email").fill(newUser.email);
@@ -79,7 +79,7 @@ test.describe("Authentication", () => {
 		await page.getByRole("button", { name: "Create Account" }).click();
 
 		await setupMocks({ page, currentUser: newUser });
-		await page.goto("/");
+		await page.goto("/dashboard");
 		await expect(page.getByTestId("current-user-name")).toHaveText(
 			`${newUser.given_name} ${newUser.family_name}`,
 		);
@@ -92,7 +92,7 @@ test.describe("Authentication", () => {
 		page,
 	}) => {
 		await setupMocks({ page, authenticated: false });
-		await page.goto("/");
+		await page.goto("/login");
 		await page.getByTestId("register-button").click();
 		await page.getByRole("button", { name: "Create Account" }).click();
 		await expect(page.getByText("Organization name is required")).toBeVisible();
@@ -109,9 +109,9 @@ test.describe("Authentication", () => {
 			permissions: [],
 		};
 
-		await setupMocks({ page, currentUser: orglessUser, orgs: false });
+		await setupMocks({ page, currentUser: orglessUser, orgs: null });
 
-		await page.goto("/");
+		await page.goto("/login");
 		await expect(page.getByTestId("register-button")).toHaveText(
 			"Register to regain access",
 		);
@@ -141,8 +141,8 @@ test.describe("Authentication", () => {
 			permissions: [],
 		};
 
-		await setupMocks({ page, currentUser: orglessUser, orgs: false });
-		await page.goto("/");
+		await setupMocks({ page, currentUser: orglessUser, orgs: null });
+		await page.goto("/login");
 		await expect(page.getByTestId("register-button")).toHaveText(
 			"Register to regain access",
 		);
@@ -155,7 +155,7 @@ test.describe("Authentication", () => {
 			.click();
 
 		await setupMocks({ page, authenticated: false });
-		await page.goto("/");
+		await page.goto("/login");
 		await expect(page.getByTestId("register-button")).toHaveText(
 			"Create a new account",
 		);

@@ -16,7 +16,7 @@ export default function HeaderLogo() {
 						asChild
 						className="data-[slot=sidebar-menu-button]:!p-1.5"
 					>
-						<Link to="/">
+						<Link to="/dashboard">
 							<Power className="h-5 w-5" />
 							<span className="font-semibold text-base">AppStarter</span>
 						</Link>

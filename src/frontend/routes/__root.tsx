@@ -15,7 +15,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			<TanStackRouterDevtools />
 		</>
 	),
-	errorComponent: ({ error, reset }) => (
-		<FullScreenError error={error} resetErrorBoundary={reset} />
-	),
+	errorComponent: ({ error, reset }) => {
+		return <FullScreenError error={error} resetErrorBoundary={reset} />;
+	},
 });

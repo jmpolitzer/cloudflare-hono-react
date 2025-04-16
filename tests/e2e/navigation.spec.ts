@@ -7,7 +7,7 @@ test.describe("Navigation", () => {
 	});
 
 	test("should navigate between main sections", async ({ page }) => {
-		await page.goto("/");
+		await page.goto("/dashboard");
 
 		// Navigate to Notes
 		await page.getByRole("link", { name: "Notes" }).click();
@@ -26,7 +26,7 @@ test.describe("Navigation", () => {
 
 		// Navigate back home
 		await page.getByRole("link", { name: "Dashboard" }).click();
-		expect(page.url()).toBe("http://localhost:5173/");
+		expect(page.url()).toBe("http://localhost:5173/dashboard");
 	});
 
 	test("should show breadcrumb navigation", async ({ page }) => {
