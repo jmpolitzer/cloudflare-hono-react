@@ -1,4 +1,5 @@
 import Layout from "@/frontend/components/layouts/main";
+import LoadingSpinner from "@/frontend/components/ui/loading-spinner";
 import { Toaster } from "@/frontend/components/ui/sonner";
 import {
 	getCurrentUserQueryOptions,
@@ -37,4 +38,5 @@ export const Route = createFileRoute("/_authenticated")({
 		}
 	},
 	component: Component,
+	pendingComponent: LoadingSpinner,
 });

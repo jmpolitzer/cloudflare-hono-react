@@ -1,6 +1,7 @@
+import LoginOrRegister from "@/frontend/components/auth/login-or-register";
+import LoadingSpinner from "@/frontend/components/ui/loading-spinner";
 import { getCurrentUserQueryOptions } from "@/frontend/hooks/users";
 import { createFileRoute } from "@tanstack/react-router";
-import LoginOrRegister from "../components/auth/login-or-register";
 
 export const Route = createFileRoute("/login")({
 	beforeLoad: async ({ context: { queryClient } }) => {
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/login")({
 		}
 	},
 	component: AuthComponent,
+	pendingComponent: LoadingSpinner,
 });
 
 function AuthComponent() {
