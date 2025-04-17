@@ -1,4 +1,5 @@
 import { auth } from "@/server/routes/auth";
+import { contact } from "@/server/routes/contact";
 import { notes } from "@/server/routes/notes";
 import { orgs } from "@/server/routes/orgs";
 import { users } from "@/server/routes/users";
@@ -9,6 +10,7 @@ import { handle } from "hono/cloudflare-pages";
 // Set base path and add resource route groups
 const app = new Hono()
 	.basePath("/api")
+	.route("/contact", contact)
 	.route("/notes", notes)
 	.route("/users", users)
 	.route("/orgs", orgs)

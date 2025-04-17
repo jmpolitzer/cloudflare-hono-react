@@ -52,6 +52,7 @@ export interface MockKindeClientOptions {
 	user?: {
 		id: string;
 		email?: string | null;
+		phone?: string | null;
 		given_name?: string | null;
 		family_name?: string | null;
 		picture?: string | null;
@@ -97,6 +98,7 @@ const initMockKindeClient = (options: MockKindeClientOptions = {}) => {
 		getUser: async (sessionManager: SessionManager) => ({
 			id: config.user?.id ?? "mock-user-id",
 			email: config.user?.email ?? "",
+			phone: config.user?.phone ?? "",
 			given_name: config.user?.given_name ?? "",
 			family_name: config.user?.family_name ?? "",
 			picture: config.user?.picture ?? null,
@@ -106,6 +108,7 @@ const initMockKindeClient = (options: MockKindeClientOptions = {}) => {
 		getUserProfile: async (sessionManager: SessionManager) => ({
 			id: config.user?.id ?? "mock-user-id",
 			email: config.user?.email ?? "",
+			phone: config.user?.phone ?? "",
 			given_name: config.user?.given_name ?? "",
 			family_name: config.user?.family_name ?? "",
 			picture: config.user?.picture ?? null,

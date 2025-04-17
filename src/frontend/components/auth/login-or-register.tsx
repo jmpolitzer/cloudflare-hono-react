@@ -34,6 +34,7 @@ import type {
 	LoginUserSchemaType,
 	RegisterUserSchemaType,
 } from "@/frontend/hooks/users";
+import { Link } from "@tanstack/react-router";
 
 type AuthView = "main" | "login" | "register";
 
@@ -141,15 +142,15 @@ export default function LoginOrRegister({
 					<div>
 						By continuing, you agree to our Terms of Service and Privacy Policy.
 					</div>
-					{/* <div>
+					<div>
 						Need help?{" "}
 						<Link
-							to="/support"
+							to="/contact"
 							className="underline underline-offset-4 hover:text-primary"
 						>
 							Contact support
 						</Link>
-					</div> */}
+					</div>
 				</CardFooter>
 			</Card>
 		</div>

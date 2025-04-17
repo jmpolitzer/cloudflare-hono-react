@@ -143,6 +143,7 @@ describe("Auth API Tests", () => {
 		const expectedUser = {
 			id: "test-user-id",
 			email: "test@example.com",
+			phone: "8675309",
 			given_name: "Test",
 			family_name: "User",
 			picture: "test-picture-url",

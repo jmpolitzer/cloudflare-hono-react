@@ -1,4 +1,4 @@
-import Layout from "@/frontend/components/layouts/main";
+import AuthenticatedLayout from "@/frontend/components/layouts/authenticated";
 import LoadingSpinner from "@/frontend/components/ui/loading-spinner";
 import { Toaster } from "@/frontend/components/ui/sonner";
 import {
@@ -9,10 +9,10 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 const Component = () => {
 	return (
-		<Layout>
+		<AuthenticatedLayout>
 			<Outlet />
 			<Toaster />
-		</Layout>
+		</AuthenticatedLayout>
 	);
 };
 

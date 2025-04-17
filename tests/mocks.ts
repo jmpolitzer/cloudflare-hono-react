@@ -3,6 +3,7 @@ import type { UserType } from "@kinde-oss/kinde-typescript-sdk";
 export const mockUser: UserType = {
 	id: "mock-user-id",
 	email: "mockuser@example.com",
+	phone: "8675309",
 	given_name: "Mock",
 	family_name: "User",
 	picture: "mock-picture",

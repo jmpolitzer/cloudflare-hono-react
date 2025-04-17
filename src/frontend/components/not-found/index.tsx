@@ -34,7 +34,7 @@ export default function NotFound() {
 						</Link>
 					</Button>
 
-					{/* <p className="text-muted-foreground text-sm">
+					<p className="text-muted-foreground text-sm">
 						If you think this is a mistake, please{" "}
 						<Link
 							to="/contact"
@@ -43,7 +43,7 @@ export default function NotFound() {
 							contact support
 						</Link>
 						.
-					</p> */}
+					</p>
 				</div>
 			</div>
 		</div>
