@@ -84,6 +84,7 @@ describe("Auth API Tests", () => {
 		const app = setupApp({ isAuthenticated: false });
 
 		const formData = new FormData();
+		formData.append("orgName", "New Org");
 		formData.append("email", "newuser@example.com");
 		formData.append("firstName", "New");
 		formData.append("lastName", "User");
@@ -142,6 +143,7 @@ describe("Auth API Tests", () => {
 		const expectedUser = {
 			id: "test-user-id",
 			email: "test@example.com",
+			phone: "8675309",
 			given_name: "Test",
 			family_name: "User",
 			picture: "test-picture-url",

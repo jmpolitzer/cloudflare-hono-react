@@ -3,7 +3,7 @@ import { LayoutDashboard, Notebook } from "lucide-react";
 export default [
 	{
 		title: "Dashboard",
-		url: "/",
+		url: "/dashboard",
 		icon: LayoutDashboard,
 	},
 	{

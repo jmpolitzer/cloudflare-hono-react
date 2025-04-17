@@ -1,52 +1,42 @@
-import LoginOrRegister from "@/frontend/components/auth/login-or-register";
-import Layout from "@/frontend/components/layouts/main";
+import AuthenticatedLayout from "@/frontend/components/layouts/authenticated";
+import LoadingSpinner from "@/frontend/components/ui/loading-spinner";
 import { Toaster } from "@/frontend/components/ui/sonner";
 import {
 	getCurrentUserQueryOptions,
 	getUserOrgsQueryOptions,
 } from "@/frontend/hooks/users";
-import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 const Component = () => {
-	/*
-		Check to see if a user exists prior to loading any authenticated routes.
-		User is set in route context by the beforeLoad function below. 
-	*/
-	const { userOrgs, user } = Route.useRouteContext();
-
-	if (!user) {
-		return <LoginOrRegister />;
-	}
-
-	/*
-		Redirect to registration if user is not part of any org.
-		This can happen if a user is removed from an org by an admin.
-	*/
-	if (!userOrgs || !userOrgs.orgs) {
-		return <LoginOrRegister orgless />;
-	}
-
 	return (
-		<Layout>
+		<AuthenticatedLayout>
 			<Outlet />
 			<Toaster />
-		</Layout>
+		</AuthenticatedLayout>
 	);
 };
 
 export const Route = createFileRoute("/_authenticated")({
-	beforeLoad: async ({ context }) => {
+	beforeLoad: async ({ context, location }) => {
 		const queryClient = context.queryClient;
-
-		try {
-			const user = await queryClient.fetchQuery(getCurrentUserQueryOptions);
-			const userOrgs = await queryClient.fetchQuery(
-				getUserOrgsQueryOptions(user.id),
-			);
-			return { userOrgs, user };
-		} catch (e) {
-			return { userOrgs: null, user: null };
+		const user = await queryClient.fetchQuery(getCurrentUserQueryOptions);
+		const userOrgs = await queryClient.fetchQuery(
+			getUserOrgsQueryOptions(user.id),
+		);
+		/* 
+			Check to see if a user exists prior to loading any authenticated routes.
+			Also check to see if a user is not part of an org. This can happen if a 
+			user is removed from an org.
+		*/
+		if (!user || !userOrgs || !userOrgs.orgs) {
+			throw redirect({
+				to: "/login",
+				search: {
+					redirect: location.href,
+				},
+			});
 		}
 	},
 	component: Component,
+	pendingComponent: LoadingSpinner,
 });

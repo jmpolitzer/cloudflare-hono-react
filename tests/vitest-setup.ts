@@ -42,7 +42,6 @@ export const mockKindeBindings: KindeBindings = {
 	KINDE_AUTH_DOMAIN: "https://mock.kinde.com",
 	KINDE_CLIENT_ID: "mock-client-id",
 	KINDE_CLIENT_SECRET: "mock-client-secret",
-	KINDE_REDIRECT_URL: "http://localhost:8787/auth/callback",
 	KINDE_M2M_ID: "mock-m2m-id",
 	KINDE_M2M_SECRET: "mock-m2m-secret",
 	KINDE_CONNECTION_ID: "93901202029",
@@ -53,6 +52,7 @@ export interface MockKindeClientOptions {
 	user?: {
 		id: string;
 		email?: string | null;
+		phone?: string | null;
 		given_name?: string | null;
 		family_name?: string | null;
 		picture?: string | null;
@@ -98,6 +98,7 @@ const initMockKindeClient = (options: MockKindeClientOptions = {}) => {
 		getUser: async (sessionManager: SessionManager) => ({
 			id: config.user?.id ?? "mock-user-id",
 			email: config.user?.email ?? "",
+			phone: config.user?.phone ?? "",
 			given_name: config.user?.given_name ?? "",
 			family_name: config.user?.family_name ?? "",
 			picture: config.user?.picture ?? null,
@@ -107,6 +108,7 @@ const initMockKindeClient = (options: MockKindeClientOptions = {}) => {
 		getUserProfile: async (sessionManager: SessionManager) => ({
 			id: config.user?.id ?? "mock-user-id",
 			email: config.user?.email ?? "",
+			phone: config.user?.phone ?? "",
 			given_name: config.user?.given_name ?? "",
 			family_name: config.user?.family_name ?? "",
 			picture: config.user?.picture ?? null,
@@ -406,6 +408,9 @@ export const mockUsers = {
 		email: requestBody.identities[0].details.email,
 	})),
 	refreshUserClaims: async ({ userId }: { userId: string }) => undefined,
+	updateUser: vi.fn(async ({ id, requestBody }) => {
+		return {};
+	}),
 } as unknown as typeof Users;
 
 // Mock Search API

@@ -1,11 +1,12 @@
 import { Button } from "@/frontend/components/ui/button";
 import { LoaderIcon } from "lucide-react";
+import type { HTMLAttributes } from "react";
 
 interface LoadingButtonProps {
 	isLoading: boolean;
 	label: string;
-	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 	type?: "button" | "submit" | "reset";
+	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export default function LoadingButton({
@@ -13,9 +14,10 @@ export default function LoadingButton({
 	label,
 	onClick,
 	type = "button",
-}: LoadingButtonProps) {
+	...rest
+}: LoadingButtonProps & HTMLAttributes<HTMLButtonElement>) {
 	return (
-		<Button onClick={onClick} type={type}>
+		<Button onClick={onClick} type={type} {...rest}>
 			{isLoading ? <LoaderIcon className="animate-spin" /> : label}
 		</Button>
 	);

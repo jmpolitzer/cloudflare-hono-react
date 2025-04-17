@@ -24,7 +24,7 @@ import {
 	editOrgSchema,
 	updateOrgUserRolesSchema,
 } from "@/shared/validations/organizations";
-import { registerUserSchema } from "@/shared/validations/users";
+import { inviteUserSchema } from "@/shared/validations/users";
 import { zValidator } from "@hono/zod-validator";
 import {
 	Organizations as defaultOrganizations,
@@ -49,7 +49,9 @@ export function createOrgsRoutes({
 	/* Create Hono app resource group with Cloudflare bindings */
 	const app = new Hono<{ Bindings: CloudflareBindings }>();
 	const orgs = app
+		/* This middleware is used to get the Kinde client. This must be listed first to use ensureUser. */
 		.use(getKindeClient)
+		/* This middleware is used to check if the current user is authenticated. */
 		.use(ensureUser)
 		/* Inits the Kinde management API (Organizations, Users, etc.) */
 		.use(initKindeApi)
@@ -126,7 +128,7 @@ export function createOrgsRoutes({
 			"/:orgId/invite",
 			ensureOrgAssociation,
 			ensureOrgAdmin,
-			zValidator("form", registerUserSchema, (result, c) => {
+			zValidator("form", inviteUserSchema, (result, c) => {
 				if (!result.success) {
 					throw zodBadRequestException(result.error);
 				}

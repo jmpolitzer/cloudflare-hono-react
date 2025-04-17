@@ -12,11 +12,11 @@ interface LayoutProps {
 	children: React.ReactNode;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function AuthenticatedLayout({ children }: LayoutProps) {
 	const user = useCurrentUser();
-	if (!user.data) return null;
+	const userOrgsQuery = useUserOrgs(user?.data?.id);
 
-	const userOrgsQuery = useUserOrgs(user.data.id);
+	if (!user.data) return null;
 	if (!userOrgsQuery.data) return null;
 
 	return (

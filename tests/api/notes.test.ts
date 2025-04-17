@@ -15,9 +15,9 @@ import type { MockKindeClientOptions } from "../vitest-setup";
 
 describe("Notes API Tests", () => {
 	const db = drizzle(testEnv.DB, { schema });
-	const setupApp = (authOptions?: MockKindeClientOptions) => {
+	const setupApp = (notesOptions?: MockKindeClientOptions) => {
 		const notes = createNotesRoutes({
-			getKindeClient: mockGetKindeClient(authOptions),
+			getKindeClient: mockGetKindeClient(notesOptions),
 			ensureUser: mockEnsureUser,
 		});
 

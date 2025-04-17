@@ -1,6 +1,5 @@
 import LoadingButton from "@/frontend/components/buttons/loading-button";
 import AlertError from "@/frontend/components/errors/alert-error";
-import { Button } from "@/frontend/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -18,77 +17,64 @@ import {
 	FormMessage,
 } from "@/frontend/components/ui/form";
 import { Input } from "@/frontend/components/ui/input";
-import { useInviteUserToOrg } from "@/frontend/hooks/orgs";
-import { inviteUserSchema } from "@/shared/validations/users";
+import { useEditUser } from "@/frontend/hooks/users";
+import { editUserSchema } from "@/shared/validations/users";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import EditButton from "../buttons/edit-button";
 
-import type { InviteUserSchemaType } from "@/frontend/hooks/users";
+import type { CurrentUser, EditUserSchemaType } from "@/frontend/hooks/users";
 
-interface InviteUserToOrgProps {
-	orgId: string;
+interface EditUserProps {
+	currentUser: NonNullable<CurrentUser>;
 }
 
-export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
+export default function EditUser({ currentUser }: EditUserProps) {
 	const dialogTriggerRef = useRef<HTMLButtonElement | null>(null);
 	const {
-		mutateAsync: inviteUserToOrgMutation,
+		mutateAsync: editUserMutation,
 		error,
 		isError,
-	} = useInviteUserToOrg(orgId);
+	} = useEditUser(currentUser.id);
 
-	const form = useForm<InviteUserSchemaType>({
-		resolver: zodResolver(inviteUserSchema),
+	const form = useForm<EditUserSchemaType>({
+		resolver: zodResolver(editUserSchema),
 		defaultValues: {
-			email: "",
-			firstName: "",
-			lastName: "",
+			firstName: currentUser.given_name,
+			lastName: currentUser.family_name,
 		},
 	});
 
-	async function onSubmit(values: InviteUserSchemaType) {
-		await inviteUserToOrgMutation(values);
+	async function onSubmit(values: EditUserSchemaType) {
+		await editUserMutation(values);
 
 		if (dialogTriggerRef.current) {
 			dialogTriggerRef.current.click();
 		}
 
-		toast.success(`${values.email} invited successfully.`);
-		form.reset();
+		toast.success("Updated successfully.");
+		form.reset(values);
 	}
 
 	return (
 		<Dialog>
 			<div className="flex justify-end pt-4">
-				<DialogTrigger asChild>
-					<Button ref={dialogTriggerRef}>Invite User</Button>
+				<DialogTrigger asChild data-testid="edit-user">
+					<EditButton ref={dialogTriggerRef} />
 				</DialogTrigger>
 			</div>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
-					<DialogTitle>Invite User</DialogTitle>
+					<DialogTitle>Edit User</DialogTitle>
 					<DialogDescription>
-						Enter details for a new user here. Click submit when you're done.
+						Edit your user info here. Click submit when you're done.
 					</DialogDescription>
 				</DialogHeader>
 				<Form {...form}>
 					{isError && <AlertError message={error.message} />}
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-						<FormField
-							control={form.control}
-							name="email"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Email</FormLabel>
-									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
 						<FormField
 							control={form.control}
 							name="firstName"
@@ -116,6 +102,7 @@ export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 							)}
 						/>
 						<LoadingButton
+							data-testid="save-edit-user"
 							label="Submit"
 							isLoading={form.formState.isSubmitting}
 							type="submit"

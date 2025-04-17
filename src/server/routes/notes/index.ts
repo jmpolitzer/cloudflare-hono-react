@@ -8,18 +8,13 @@ import {
 	getKindeClient as defaultKindeClient,
 } from "@/server/utils/kinde";
 import type { KindeRouteBindings } from "@/server/utils/kinde";
+import { noteFormSchema } from "@/shared/validations/notes";
 import { zValidator } from "@hono/zod-validator";
 import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-
-// Create a schema for the form data (without user/org fields)
-const noteFormSchema = z.object({
-	title: z.string().min(1, "Title is required").max(255, "Title is too long"),
-	description: z.string().max(10000, "Description is too long").optional(),
-});
 
 // Pagination schema
 const paginationSchema = z.object({

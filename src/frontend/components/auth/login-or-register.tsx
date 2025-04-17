@@ -30,15 +30,17 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import type {
+	CurrentUser,
 	LoginUserSchemaType,
 	RegisterUserSchemaType,
 } from "@/frontend/hooks/users";
+import { Link } from "@tanstack/react-router";
 
 type AuthView = "main" | "login" | "register";
 
 export default function LoginOrRegister({
-	orgless = false,
-}: { orgless?: boolean }) {
+	currentUser,
+}: { currentUser: CurrentUser | null }) {
 	const [view, setView] = useState<AuthView>("main");
 
 	return (
@@ -47,7 +49,7 @@ export default function LoginOrRegister({
 				<CardHeader className="space-y-1">
 					<CardTitle className="font-bold text-2xl">
 						{view === "main"
-							? orgless
+							? currentUser
 								? "Access Required"
 								: "Welcome Back"
 							: view === "login"
@@ -56,7 +58,7 @@ export default function LoginOrRegister({
 					</CardTitle>
 					<CardDescription>
 						{view === "main"
-							? orgless
+							? currentUser
 								? "You need to re-register to regain access"
 								: "Sign in to your account or create a new one"
 							: view === "login"
@@ -66,7 +68,7 @@ export default function LoginOrRegister({
 				</CardHeader>
 
 				<CardContent className="grid gap-4">
-					{orgless && view === "main" && (
+					{currentUser && view === "main" && (
 						<div className="flex items-start gap-2 rounded-lg border bg-amber-50 p-3 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
 							<AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0" />
 							<div className="text-sm">
@@ -78,7 +80,7 @@ export default function LoginOrRegister({
 
 					{view === "main" && (
 						<>
-							{!orgless && (
+							{!currentUser && (
 								<div className="grid gap-2">
 									<Button
 										className="w-full"
@@ -93,7 +95,7 @@ export default function LoginOrRegister({
 								</div>
 							)}
 
-							{!orgless && (
+							{!currentUser && (
 								<div className="relative">
 									<div className="absolute inset-0 flex items-center">
 										<Separator className="w-full" />
@@ -107,7 +109,7 @@ export default function LoginOrRegister({
 							)}
 
 							<Button
-								variant={orgless ? "default" : "outline"}
+								variant={currentUser ? "default" : "outline"}
 								className="w-full"
 								data-testid="register-button"
 								onClick={() => setView("register")}
@@ -115,7 +117,7 @@ export default function LoginOrRegister({
 								<div className="flex items-center justify-center gap-2">
 									<UserPlus className="h-4 w-4" />
 									<span>
-										{orgless
+										{currentUser
 											? "Register to regain access"
 											: "Create a new account"}
 									</span>
@@ -124,10 +126,15 @@ export default function LoginOrRegister({
 						</>
 					)}
 
-					{view === "login" && <LoginForm onBack={() => setView("main")} />}
+					{view === "login" && (
+						<LoginForm currentUser={null} onBack={() => setView("main")} />
+					)}
 
 					{view === "register" && (
-						<RegisterForm onBack={() => setView("main")} />
+						<RegisterForm
+							currentUser={currentUser}
+							onBack={() => setView("main")}
+						/>
 					)}
 				</CardContent>
 
@@ -135,15 +142,15 @@ export default function LoginOrRegister({
 					<div>
 						By continuing, you agree to our Terms of Service and Privacy Policy.
 					</div>
-					{/* <div>
+					<div>
 						Need help?{" "}
 						<Link
-							to="/support"
+							to="/contact"
 							className="underline underline-offset-4 hover:text-primary"
 						>
 							Contact support
 						</Link>
-					</div> */}
+					</div>
 				</CardFooter>
 			</Card>
 		</div>
@@ -151,6 +158,7 @@ export default function LoginOrRegister({
 }
 
 interface FormProps {
+	currentUser: CurrentUser | null;
 	onBack: () => void;
 }
 
@@ -167,7 +175,6 @@ function LoginForm({ onBack }: FormProps) {
 	async function onSubmit(values: LoginUserSchemaType) {
 		const data = await loginUserMutation(values);
 
-		// form.reset();
 		window.location.href = data.redirectUrl;
 	}
 
@@ -182,7 +189,7 @@ function LoginForm({ onBack }: FormProps) {
 						<FormItem>
 							<FormLabel>Email</FormLabel>
 							<FormControl>
-								<Input {...field} />
+								<Input {...field} data-testid="login-email" />
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -210,7 +217,9 @@ function LoginForm({ onBack }: FormProps) {
 	);
 }
 
-function RegisterForm({ onBack }: FormProps) {
+function RegisterForm({ currentUser, onBack }: FormProps) {
+	const readOnlyClasses = "read-only:cursor-not-allowed read-only:opacity-50";
+
 	const {
 		error,
 		isError,
@@ -220,16 +229,16 @@ function RegisterForm({ onBack }: FormProps) {
 	const form = useForm<RegisterUserSchemaType>({
 		resolver: zodResolver(registerUserSchema),
 		defaultValues: {
-			email: "",
-			firstName: "",
-			lastName: "",
+			email: currentUser ? currentUser.email : "",
+			firstName: currentUser ? currentUser.given_name : "",
+			lastName: currentUser ? currentUser.family_name : "",
+			orgName: "",
 		},
 	});
 
 	async function onSubmit(values: RegisterUserSchemaType) {
 		const data = await registerUserMutation(values);
 
-		// form.reset();
 		window.location.href = data.redirectUrl;
 	}
 
@@ -239,12 +248,30 @@ function RegisterForm({ onBack }: FormProps) {
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 				<FormField
 					control={form.control}
+					name="orgName"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Organization Name</FormLabel>
+							<FormControl>
+								<Input {...field} data-testid="register-org-name" />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					control={form.control}
 					name="email"
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Email</FormLabel>
 							<FormControl>
-								<Input {...field} />
+								<Input
+									{...field}
+									className={currentUser ? readOnlyClasses : ""}
+									data-testid="register-email"
+									readOnly={Boolean(currentUser)}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -257,7 +284,12 @@ function RegisterForm({ onBack }: FormProps) {
 						<FormItem>
 							<FormLabel>First Name</FormLabel>
 							<FormControl>
-								<Input {...field} />
+								<Input
+									{...field}
+									className={currentUser ? readOnlyClasses : ""}
+									data-testid="register-first-name"
+									readOnly={Boolean(currentUser)}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -270,7 +302,12 @@ function RegisterForm({ onBack }: FormProps) {
 						<FormItem>
 							<FormLabel>Last Name</FormLabel>
 							<FormControl>
-								<Input {...field} />
+								<Input
+									{...field}
+									className={currentUser ? readOnlyClasses : ""}
+									data-testid="register-last-name"
+									readOnly={Boolean(currentUser)}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -287,6 +324,17 @@ function RegisterForm({ onBack }: FormProps) {
 						<ArrowLeft className="mr-2 h-4 w-4" />
 						Back
 					</Button>
+					{currentUser && (
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							className="px-0"
+							asChild
+						>
+							<a href="/api/auth/logout">Register as a different user</a>
+						</Button>
+					)}
 				</div>
 				<LoadingButton
 					label="Create Account"

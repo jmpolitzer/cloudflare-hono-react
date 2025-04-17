@@ -40,7 +40,7 @@ Create Two Kinde Applications:
 
 4. Constants
 
-- export const DEFAULT_ORG_NAME = "Default Org";
+- export const MANAGE_ORG = "manage:org";
 
 DB:
 
