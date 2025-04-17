@@ -12,6 +12,19 @@ test.describe("Authentication", () => {
 		await expect(page.getByTestId("register-button")).toContainText("Create");
 	});
 
+	test("should be redirected to dashboard from /login when authenticated", async ({
+		page,
+	}) => {
+		await setupMocks({ page });
+
+		await page.goto("/login");
+		await expect(page.getByTestId("current-user-name")).toHaveText("Mock User");
+		await expect(page.getByTestId("current-user-org")).toHaveText("Mock Org");
+		await expect(page.getByTestId("dashboard-breadcrumb")).toHaveText(
+			"Dashboard",
+		);
+	});
+
 	test("should show user profile when authenticated", async ({ page }) => {
 		await setupMocks({ page });
 		await page.goto("/dashboard");

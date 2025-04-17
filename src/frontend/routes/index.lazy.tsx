@@ -39,12 +39,12 @@ function MarketingPage() {
 						</a>
 					</nav>
 					<div className="flex items-center gap-4">
-						<a
-							href="/login"
+						<Link
+							to="/login"
 							className="font-medium text-sm underline-offset-4 hover:underline"
 						>
 							Login
-						</a>
+						</Link>
 						<Button asChild>
 							<a href="#pricing">Get Started</a>
 						</Button>
@@ -94,7 +94,7 @@ function MarketingPage() {
 							</div>
 							<div className="flex items-center justify-center">
 								<img
-									src="/placeholder.svg?height=550&width=550"
+									src="src/frontend/assets/marketing-placeholder.svg?height=550&width=550"
 									width={550}
 									height={550}
 									alt="Product screenshot"
@@ -391,10 +391,10 @@ function MarketingPage() {
 					<div className="flex flex-col gap-2">
 						<Link to="/" className="flex items-center gap-2 font-bold">
 							<div className="h-6 w-6 rounded-full bg-primary" />
-							<span>Acme Inc</span>
+							<span>StarterApp</span>
 						</Link>
 						<p className="text-muted-foreground text-sm">
-							&copy; {new Date().getFullYear()} Acme Inc. All rights reserved.
+							&copy; {new Date().getFullYear()} StarterApp. All rights reserved.
 						</p>
 					</div>
 					{/* <nav className="flex gap-4 sm:gap-6">
