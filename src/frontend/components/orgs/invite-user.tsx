@@ -24,24 +24,24 @@ import {
 	toast,
 } from "@/frontend/components/ui/sonner";
 import { useInviteUserToOrg } from "@/frontend/hooks/orgs";
+import type { InviteUserSchemaType } from "@/frontend/hooks/orgs";
+import type { UserOrgs } from "@/frontend/hooks/users";
 import { inviteUserSchema } from "@/shared/validations/users";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 
-import type { InviteUserSchemaType } from "@/frontend/hooks/users";
-
 interface InviteUserToOrgProps {
-	orgId: string;
+	org: NonNullable<UserOrgs>["orgs"][0];
 }
 
-export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
+export default function InviteUserToOrg({ org }: InviteUserToOrgProps) {
 	const dialogTriggerRef = useRef<HTMLButtonElement | null>(null);
 	const {
 		mutateAsync: inviteUserToOrgMutation,
 		error,
 		isError,
-	} = useInviteUserToOrg(orgId);
+	} = useInviteUserToOrg(org);
 
 	const form = useForm<InviteUserSchemaType>({
 		resolver: zodResolver(inviteUserSchema),
@@ -49,6 +49,8 @@ export default function InviteUserToOrg({ orgId }: InviteUserToOrgProps) {
 			email: "",
 			firstName: "",
 			lastName: "",
+			orgId: org.id,
+			orgName: org.name,
 		},
 	});
 

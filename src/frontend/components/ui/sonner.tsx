@@ -1,3 +1,4 @@
+import { capitalize } from "@/frontend/lib/utils";
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, toast as sonnerToast } from "sonner";
 
@@ -27,13 +28,11 @@ function toast({ entity, operation, result }: ToastConfig) {
 	switch (result) {
 		case ToastResult.Failure:
 			sonnerToast.error(
-				`${ToastResult.Failure}d to ${operation} ${entity.toUpperCase()}.`,
+				`${ToastResult.Failure}d to ${operation} ${capitalize(entity)}.`,
 			);
 			break;
 		case ToastResult.Success:
-			sonnerToast.success(
-				`${entity.toUpperCase()} ${operation}d successfully.`,
-			);
+			sonnerToast.success(`${capitalize(entity)} ${operation}d successfully.`);
 			break;
 		default:
 			sonnerToast.info(entity);

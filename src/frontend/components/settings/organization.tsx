@@ -37,7 +37,7 @@ export default function OrganizationSection({
 					<p className="text-muted-foreground text-sm">
 						Manage your organization's users and settings
 					</p>
-					<InviteUserToOrg orgId={currentOrg.id} />
+					<InviteUserToOrg org={currentOrg} />
 					<OrgUserTable currentUserId={currentUser.id} orgId={currentOrg.id} />
 				</div>
 			</div>

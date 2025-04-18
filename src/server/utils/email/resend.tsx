@@ -1,3 +1,4 @@
+import { DEFAULT_EMAIL_SENDER } from "@/shared/constants";
 import { Resend } from "resend";
 import InviteUserToOrgEmail from "./templates/invite-user-to-org";
 
@@ -10,8 +11,6 @@ export interface ResendVariables {
 export interface ResendBindings {
 	RESEND_API_KEY: string;
 }
-
-const DEFAULT_EMAIL_SENDER = "Cloudflare-React-Hono <no-reply@pltzr.io>";
 
 export const initResendEmailer: MiddlewareHandler<{
 	Bindings: ResendBindings;

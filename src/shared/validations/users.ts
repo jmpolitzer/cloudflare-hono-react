@@ -1,11 +1,22 @@
 import { z } from "zod";
 
-export const loginUserSchema = z.object({
+const optionalOrgIdSchema = z.object({
+	orgId: z.string().optional(),
+});
+
+const requiredOrgIdSchema = z.object({
+	orgId: z.string(),
+});
+
+const emailSchema = z.object({
 	email: z
 		.string()
 		.min(1, "Email is required")
 		.email("This is not a valid email"),
-	orgId: z.string().optional(),
+});
+
+const orgNameSchema = z.object({
+	orgName: z.string().min(1, "Organization name is required"),
 });
 
 export const editUserSchema = z.object({
@@ -13,16 +24,20 @@ export const editUserSchema = z.object({
 	lastName: z.string().min(1, "Last name is required"),
 });
 
-export const inviteUserSchema = z
+export const loginUserSchema = z
 	.object({})
-	.merge(loginUserSchema)
-	.merge(editUserSchema);
-
-const orgNameSchema = z.object({
-	orgName: z.string().min(1, "Organization name is required"),
-});
+	.merge(emailSchema)
+	.merge(optionalOrgIdSchema);
 
 export const registerUserSchema = z
 	.object({})
-	.merge(inviteUserSchema)
-	.merge(orgNameSchema);
+	.merge(emailSchema)
+	.merge(orgNameSchema)
+	.merge(editUserSchema);
+
+export const inviteUserSchema = z
+	.object({})
+	.merge(emailSchema)
+	.merge(requiredOrgIdSchema)
+	.merge(orgNameSchema)
+	.merge(editUserSchema);

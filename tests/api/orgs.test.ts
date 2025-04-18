@@ -240,6 +240,8 @@ describe("Orgs API Tests", () => {
 		formData.append("email", "newuser@example.com");
 		formData.append("firstName", "New");
 		formData.append("lastName", "User");
+		formData.append("orgId", "mock-org");
+		formData.append("orgName", "Mock Org");
 
 		const response = await app.request(
 			"/api/orgs/mock-org/invite",
@@ -283,6 +285,8 @@ describe("Orgs API Tests", () => {
 		formData.append("email", "existinguser@example.com");
 		formData.append("firstName", "Existing");
 		formData.append("lastName", "User");
+		formData.append("orgId", "mock-org");
+		formData.append("orgName", "Mock Org");
 
 		const response = await app.request(
 			"/api/orgs/mock-org/invite",
@@ -313,6 +317,8 @@ describe("Orgs API Tests", () => {
 		formData.append("email", "invalid-email"); // Invalid email
 		formData.append("firstName", ""); // Missing firstName
 		formData.append("lastName", "User");
+		formData.append("orgId", "mock-org");
+		formData.append("orgName", "Mock Org");
 
 		const response = await app.request(
 			"/api/orgs/mock-org/invite",

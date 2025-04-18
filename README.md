@@ -42,6 +42,7 @@ Create Two Kinde Applications:
 
 - export const MANAGE_ORG = "manage:org";
 - export contst APP_NAME = "my-app-name";
+- export const DEFAULT_EMAIL_SENDER = `${APP_NAME} <no-reply@domain.com>`; (this must be a real, verified domain)
 
 DB:
 
