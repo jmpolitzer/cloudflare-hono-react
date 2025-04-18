@@ -41,6 +41,7 @@ Create Two Kinde Applications:
 4. Constants
 
 - export const MANAGE_ORG = "manage:org";
+- export contst APP_NAME = "my-app-name";
 
 DB:
 

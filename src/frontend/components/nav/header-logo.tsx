@@ -4,6 +4,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/frontend/components/ui/sidebar";
+import { APP_NAME } from "@/shared/constants";
 import { Link } from "@tanstack/react-router";
 import { Power } from "lucide-react";
 
@@ -18,7 +19,7 @@ export default function HeaderLogo() {
 					>
 						<Link to="/dashboard">
 							<Power className="h-5 w-5" />
-							<span className="font-semibold text-base">AppStarter</span>
+							<span className="font-semibold text-base">{APP_NAME}</span>
 						</Link>
 					</SidebarMenuButton>
 				</SidebarMenuItem>

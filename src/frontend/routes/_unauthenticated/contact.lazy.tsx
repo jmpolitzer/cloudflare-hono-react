@@ -21,6 +21,7 @@ import {
 import { Textarea } from "@/frontend/components/ui/textarea";
 import { useCreateContact } from "@/frontend/hooks/contact";
 import type { ContactFormSchemaType } from "@/frontend/hooks/contact";
+import { APP_NAME } from "@/shared/constants";
 import { contactFormSchema } from "@/shared/validations/contact";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute } from "@tanstack/react-router";
@@ -91,10 +92,10 @@ export default function ContactRoute() {
 									For general inquiries and support
 								</p>
 								<a
-									href="mailto:hello@starterapp.com"
+									href={`mailto:hello@${APP_NAME}.com`.toLowerCase()}
 									className="text-sm hover:underline"
 								>
-									hello@starterapp.com
+									{`hello@${APP_NAME}.com`.toLowerCase()}
 								</a>
 							</div>
 						</div>

@@ -1,4 +1,5 @@
 import { Button } from "@/frontend/components/ui/button";
+import { APP_NAME } from "@/shared/constants";
 import { Link } from "@tanstack/react-router";
 
 interface LayoutProps {
@@ -13,7 +14,7 @@ export default function UnuthenticatedLayout({ children }: LayoutProps) {
 				<div className="container flex h-16 items-center justify-between px-4 md:px-6">
 					<Link to="/" className="flex items-center gap-2 font-bold">
 						<div className="h-6 w-6 rounded-full bg-primary" />
-						<span>StarterApp</span>
+						<span>{APP_NAME}</span>
 					</Link>
 					<nav className="hidden gap-6 md:flex">
 						<a
@@ -59,10 +60,11 @@ export default function UnuthenticatedLayout({ children }: LayoutProps) {
 					<div className="flex flex-col gap-2">
 						<Link to="/" className="flex items-center gap-2 font-bold">
 							<div className="h-6 w-6 rounded-full bg-primary" />
-							<span>StarterApp</span>
+							<span>{APP_NAME}</span>
 						</Link>
 						<p className="text-muted-foreground text-sm">
-							&copy; {new Date().getFullYear()} StarterApp. All rights reserved.
+							&copy; {new Date().getFullYear()} ${APP_NAME}. All rights
+							reserved.
 						</p>
 					</div>
 					<nav className="flex gap-4 sm:gap-6">
