@@ -13,6 +13,11 @@ import {
 	RadioGroup,
 	RadioGroupItem,
 } from "@/frontend/components/ui/radio-group";
+import {
+	ToastOperation,
+	ToastResult,
+	toast,
+} from "@/frontend/components/ui/sonner";
 import { Textarea } from "@/frontend/components/ui/textarea";
 import { useCreateContact } from "@/frontend/hooks/contact";
 import type { ContactFormSchemaType } from "@/frontend/hooks/contact";
@@ -21,7 +26,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/_unauthenticated/contact")({
 	component: ContactRoute,
@@ -46,10 +50,22 @@ export default function ContactRoute() {
 	});
 
 	async function onSubmit(values: ContactFormSchemaType) {
-		await createContactMutation(values);
+		try {
+			await createContactMutation(values);
 
-		form.reset();
-		toast("Message sent! We'll get back to you as soon as possible.");
+			toast({
+				entity: "Message sent! We'll get back to you as soon as possible.",
+				operation: ToastOperation.Create,
+				result: ToastResult.Info,
+			});
+			form.reset();
+		} catch (error) {
+			toast({
+				entity: "contact request",
+				operation: ToastOperation.Create,
+				result: ToastResult.Failure,
+			});
+		}
 	}
 
 	return (

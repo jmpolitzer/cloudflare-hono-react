@@ -53,3 +53,6 @@ Testing:
 
 1. API Tests
 2. E2E Tests
+
+Utils:
+1. toast

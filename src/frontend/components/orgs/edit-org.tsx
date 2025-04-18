@@ -9,13 +9,17 @@ import {
 	FormMessage,
 } from "@/frontend/components/ui/form";
 import { Input } from "@/frontend/components/ui/input";
+import {
+	ToastOperation,
+	ToastResult,
+	toast,
+} from "@/frontend/components/ui/sonner";
 import { useEditOrg } from "@/frontend/hooks/orgs";
 import { editOrgSchema } from "@/shared/validations/organizations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Save, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 
 import type { EditOrgSchemaType } from "@/frontend/hooks/orgs";
 import type { UserOrgs } from "@/frontend/hooks/users";
@@ -36,10 +40,22 @@ export default function EditOrg({ org }: CreateOrEditOrgProps) {
 	});
 
 	async function onSubmit(values: EditOrgSchemaType) {
-		await editOrgMutation(values);
+		try {
+			await editOrgMutation(values);
 
-		setIsEditing(false);
-		toast.success("Organization updated.");
+			toast({
+				entity: "organization",
+				operation: ToastOperation.Update,
+				result: ToastResult.Success,
+			});
+			setIsEditing(false);
+		} catch (error) {
+			toast({
+				entity: "organization",
+				operation: ToastOperation.Update,
+				result: ToastResult.Failure,
+			});
+		}
 	}
 
 	return (
