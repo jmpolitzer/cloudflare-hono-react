@@ -1,5 +1,6 @@
 import { createOrgsRoutes } from "@/server/routes/orgs";
 import { errorHandler } from "@/server/utils/errors";
+import { DEFAULT_EMAIL_SENDER } from "@/shared/constants";
 import type {
 	CancelablePromise,
 	search_users_response,
@@ -19,6 +20,7 @@ import {
 	mockOrganizations,
 	mockRefreshUser,
 	mockRegisterUserToOrg,
+	mockResendClient,
 	mockRoles,
 	mockSearch,
 	mockUnauthorizedError,
@@ -264,6 +266,13 @@ describe("Orgs API Tests", () => {
 				],
 			},
 		});
+		expect(mockResendClient.emails.send).toHaveBeenCalledWith(
+			expect.objectContaining({
+				from: DEFAULT_EMAIL_SENDER,
+				to: ["newuser@example.com"],
+				subject: "You have been invited to join Mock Org",
+			}),
+		);
 	});
 
 	it("POST /api/orgs/:orgId/invite - should invite existing user", async () => {
@@ -301,6 +310,13 @@ describe("Orgs API Tests", () => {
 			orgCode: "mock-org",
 			requestBody: { users: [{ id: "existing-user-id", roles: ["basic"] }] },
 		});
+		expect(mockResendClient.emails.send).toHaveBeenCalledWith(
+			expect.objectContaining({
+				from: DEFAULT_EMAIL_SENDER,
+				to: ["existinguser@example.com"],
+				subject: "You have been invited to join Mock Org",
+			}),
+		);
 		expect(mockUsers.createUser).not.toHaveBeenCalled();
 	});
 
