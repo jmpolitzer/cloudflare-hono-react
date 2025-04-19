@@ -1,15 +1,3 @@
-import {
-	GrantType,
-	createKindeServerClient,
-} from "@kinde-oss/kinde-typescript-sdk";
-import {
-	Organizations,
-	Roles,
-	Users,
-	init as initKindeManagementApi,
-} from "@kinde/management-api-js";
-import { deleteCookie, getCookie, setCookie } from "hono/cookie";
-
 import type {
 	ResendBindings,
 	ResendVariables,
@@ -20,9 +8,20 @@ import {
 	unknownRequestException,
 } from "@/server/utils/errors";
 import { MANAGE_ORG } from "@/shared/constants";
+import {
+	GrantType,
+	createKindeServerClient,
+} from "@kinde-oss/kinde-typescript-sdk";
 import type { SessionManager, UserType } from "@kinde-oss/kinde-typescript-sdk";
+import {
+	Organizations,
+	Roles,
+	Users,
+	init as initKindeManagementApi,
+} from "@kinde/management-api-js";
 import type { Search, get_roles_response } from "@kinde/management-api-js";
 import type { Context, MiddlewareHandler } from "hono";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import type { CookieOptions } from "hono/utils/cookie";
 
