@@ -479,37 +479,39 @@ export const mockRegisterUserToOrg = vi.fn(
 // Mock Resend emailer
 export const mockResendClient = {
 	emails: {
-		send: async ({
-			from = "no-reply@yourdomain.com",
-			to,
-			subject,
-			html,
-			text,
-			cc,
-			bcc,
-			replyTo,
-			headers,
-		}: {
-			from?: string;
-			to: string | string[];
-			subject: string;
-			html?: string;
-			text?: string;
-			cc?: string | string[];
-			bcc?: string | string[];
-			replyTo?: string | string[];
-			headers?: Record<string, string>;
-		}) => {
-			return {
-				data: {
-					id: `mock-email-id-${Math.random().toString(36).substring(2)}`,
-					from,
-					to: Array.isArray(to) ? to : [to],
-					created_at: new Date().toISOString(),
-				},
-				error: null,
-			};
-		},
+		send: vi.fn(
+			async ({
+				from = "no-reply@yourdomain.com",
+				to,
+				subject,
+				html,
+				text,
+				cc,
+				bcc,
+				replyTo,
+				headers,
+			}: {
+				from?: string;
+				to: string | string[];
+				subject: string;
+				html?: string;
+				text?: string;
+				cc?: string | string[];
+				bcc?: string | string[];
+				replyTo?: string | string[];
+				headers?: Record<string, string>;
+			}) => {
+				return {
+					data: {
+						id: `mock-email-id-${Math.random().toString(36).substring(2)}`,
+						from,
+						to: Array.isArray(to) ? to : [to],
+						created_at: new Date().toISOString(),
+					},
+					error: null,
+				};
+			},
+		),
 	},
 } as unknown as Resend;
 

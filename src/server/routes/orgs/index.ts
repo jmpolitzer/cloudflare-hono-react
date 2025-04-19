@@ -160,7 +160,7 @@ export function createOrgsRoutes({
 						formData.email,
 						formData.firstName,
 						orgLink,
-						orgId,
+						formData.orgName,
 					);
 
 					return c.json({

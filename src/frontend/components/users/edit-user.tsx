@@ -17,12 +17,16 @@ import {
 	FormMessage,
 } from "@/frontend/components/ui/form";
 import { Input } from "@/frontend/components/ui/input";
+import {
+	ToastOperation,
+	ToastResult,
+	toast,
+} from "@/frontend/components/ui/sonner";
 import { useEditUser } from "@/frontend/hooks/users";
 import { editUserSchema } from "@/shared/validations/users";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import EditButton from "../buttons/edit-button";
 
 import type { CurrentUser, EditUserSchemaType } from "@/frontend/hooks/users";
@@ -48,14 +52,26 @@ export default function EditUser({ currentUser }: EditUserProps) {
 	});
 
 	async function onSubmit(values: EditUserSchemaType) {
-		await editUserMutation(values);
+		try {
+			await editUserMutation(values);
 
-		if (dialogTriggerRef.current) {
-			dialogTriggerRef.current.click();
+			if (dialogTriggerRef.current) {
+				dialogTriggerRef.current.click();
+			}
+
+			toast({
+				entity: "user",
+				operation: ToastOperation.Update,
+				result: ToastResult.Success,
+			});
+			form.reset(values);
+		} catch (error) {
+			toast({
+				entity: "user",
+				operation: ToastOperation.Update,
+				result: ToastResult.Failure,
+			});
 		}
-
-		toast.success("Updated successfully.");
-		form.reset(values);
 	}
 
 	return (

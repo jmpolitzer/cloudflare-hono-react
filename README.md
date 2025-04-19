@@ -41,6 +41,8 @@ Create Two Kinde Applications:
 4. Constants
 
 - export const MANAGE_ORG = "manage:org";
+- export contst APP_NAME = "my-app-name";
+- export const DEFAULT_EMAIL_SENDER = `${APP_NAME} <no-reply@domain.com>`; (this must be a real, verified domain)
 
 DB:
 
@@ -53,3 +55,8 @@ Testing:
 
 1. API Tests
 2. E2E Tests
+
+Utils:
+1. toast
+2. sentry
+3. resend

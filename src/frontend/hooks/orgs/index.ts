@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { hc } from "hono/client";
 
+import type { UserOrgs } from "@/frontend/hooks/users";
 import type {
 	editOrgSchema,
 	updateOrgUserRolesSchema,
 } from "@/shared/validations/organizations";
+import type { inviteUserSchema } from "@/shared/validations/users";
 import type { AppType } from "@app-type";
 import type { InferRequestType, InferResponseType } from "hono";
 import type { z } from "zod";
@@ -39,7 +41,7 @@ export function useEditOrg(orgId: string) {
 	});
 }
 
-export function useInviteUserToOrg(orgId: string) {
+export function useInviteUserToOrg(org: NonNullable<UserOrgs>["orgs"][0]) {
 	const queryClient = useQueryClient();
 
 	return useMutation<
@@ -51,7 +53,7 @@ export function useInviteUserToOrg(orgId: string) {
 	>({
 		mutationFn: async (invitedUserForm) => {
 			const res = await client.api.orgs[":orgId"].invite.$post({
-				param: { orgId },
+				param: { orgId: org.id },
 				form: invitedUserForm,
 			});
 
@@ -157,6 +159,7 @@ export function useUpdateOrgUserRole({
 }
 
 export type EditOrgSchemaType = z.infer<typeof editOrgSchema>;
+export type InviteUserSchemaType = z.infer<typeof inviteUserSchema>;
 export type UpdateOrgUserRoleSchemaType = z.infer<
 	typeof updateOrgUserRolesSchema
 >;

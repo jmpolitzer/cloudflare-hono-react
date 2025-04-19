@@ -5,10 +5,14 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/frontend/components/ui/select";
+import {
+	ToastOperation,
+	ToastResult,
+	toast,
+} from "@/frontend/components/ui/sonner";
 import { useUpdateOrgUserRole } from "@/frontend/hooks/orgs";
 import { updateOrgUserRolesSchema } from "@/shared/validations/organizations";
 import { useForm } from "@tanstack/react-form";
-import { toast } from "sonner";
 
 import type { UpdateOrgUserRoleSchemaType } from "@/frontend/hooks/orgs";
 
@@ -38,9 +42,17 @@ export default function OrgUserRoleSelect({
 					newRoleId: value.newRoleId,
 				});
 
-				toast.success("User role updated.");
+				toast({
+					entity: "user role",
+					operation: ToastOperation.Update,
+					result: ToastResult.Success,
+				});
 			} catch (error) {
-				toast.error("Failed to update user role.");
+				toast({
+					entity: "user role",
+					operation: ToastOperation.Update,
+					result: ToastResult.Failure,
+				});
 			}
 		},
 		validators: {

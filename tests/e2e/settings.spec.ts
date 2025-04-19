@@ -20,7 +20,9 @@ test.describe("Settings", () => {
 		await page.getByTestId("save-edit-org").click();
 
 		// Verify success message
-		await expect(page.getByText("Organization updated.")).toBeVisible();
+		await expect(
+			page.getByText("Organization updated successfully."),
+		).toBeVisible();
 	});
 
 	test("should display organization users", async ({ page }) => {
@@ -68,9 +70,7 @@ test.describe("Settings", () => {
 		await page.getByTestId("remove-user-basic-user-id").click();
 
 		// Verify success message
-		await expect(
-			page.getByText("User removed from organization."),
-		).toBeVisible();
+		await expect(page.getByText("User deleted successfully.")).toBeVisible();
 	});
 
 	test("should handle errors gracefully", async ({ page }) => {
@@ -99,7 +99,7 @@ test.describe("Settings", () => {
 		await page.getByTestId("save-edit-user").click();
 
 		// Verify success message
-		await expect(page.getByText("Updated successfully")).toBeVisible();
+		await expect(page.getByText("User updated successfully")).toBeVisible();
 	});
 
 	test("should validate missing first and last name", async ({ page }) => {
@@ -162,6 +162,7 @@ test.describe("Settings", () => {
 		const basicUser = {
 			id: "basic-user-id",
 			email: "basicsuser@example.com",
+			phone: "8675309",
 			given_name: "Basic",
 			family_name: "User",
 			picture: "mock-picture",
@@ -171,7 +172,7 @@ test.describe("Settings", () => {
 
 		await setupMocks({ page, currentUser: basicUser });
 		await expect(
-			page.getByRole("heading", { name: "Organization Information " }),
+			page.getByRole("heading", { name: "Organization Information" }),
 		).not.toBeInViewport();
 	});
 });

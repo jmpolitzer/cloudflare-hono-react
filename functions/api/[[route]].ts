@@ -4,11 +4,13 @@ import { notes } from "@/server/routes/notes";
 import { orgs } from "@/server/routes/orgs";
 import { users } from "@/server/routes/users";
 import { errorHandler } from "@/server/utils/errors";
+import { sentry } from "@hono/sentry";
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
 
 // Set base path and add resource route groups
 const app = new Hono()
+	.use("*", sentry({ tracesSampleRate: 1.0, sendDefaultPii: true }))
 	.basePath("/api")
 	.route("/contact", contact)
 	.route("/notes", notes)

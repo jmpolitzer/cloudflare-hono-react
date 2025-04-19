@@ -8,7 +8,6 @@ import { hc } from "hono/client";
 
 import type {
 	editUserSchema,
-	inviteUserSchema,
 	loginUserSchema,
 	registerUserSchema,
 } from "@/shared/validations/users";
@@ -39,8 +38,6 @@ export function useRegisterUser() {
 }
 
 export function useLoginUser() {
-	const queryClient = useQueryClient();
-
 	return useMutation<
 		InferResponseType<typeof client.api.auth.login.$post>,
 		Error,
@@ -131,8 +128,7 @@ export const useUserOrgs = (userId?: string) => {
 };
 
 export type EditUserSchemaType = z.infer<typeof editUserSchema>;
-export type InviteUserSchemaType = z.infer<typeof inviteUserSchema>;
-export type LoginUserSchemaType = z.infer<typeof loginUserSchema>;
 export type RegisterUserSchemaType = z.infer<typeof registerUserSchema>;
+export type LoginUserSchemaType = z.infer<typeof loginUserSchema>;
 export type CurrentUser = ReturnType<typeof useCurrentUser>["data"];
 export type UserOrgs = ReturnType<typeof useUserOrgs>["data"];

@@ -8,8 +8,12 @@ import {
 import { useRemoveUserFromOrg } from "@/frontend/hooks/orgs";
 import { MoreHorizontal } from "lucide-react";
 
+import {
+	ToastOperation,
+	ToastResult,
+	toast,
+} from "@/frontend/components/ui/sonner";
 import type { UpdateOrgUserRoleSchemaType } from "@/frontend/hooks/orgs";
-import { toast } from "sonner";
 
 interface OrgUserActionsMenuProps {
 	currentUserId: string;
@@ -33,9 +37,17 @@ export default function OrgUserActionsMenu({
 				userId,
 			});
 
-			toast.success("User removed from organization.");
+			toast({
+				entity: "user",
+				operation: ToastOperation.Delete,
+				result: ToastResult.Success,
+			});
 		} catch (error) {
-			toast.error("Failed to remove user from organization.");
+			toast({
+				entity: "user",
+				operation: ToastOperation.Delete,
+				result: ToastResult.Failure,
+			});
 		}
 	};
 
